@@ -1501,6 +1501,35 @@ TIP: The OSGI console is an intrinsic feature of eclipse.
 It is very powerful and can help to track to problems.
 If you want to know more about it, search for `eclipse OSGI console` in the internet.
 
+== Headless REST API & Server
+
+Virtual Satellite can be run headless as a server that provides a REST API. 
+The REST API can be used to access and manipluate the Virtual Satellite model without the user interface.
+It also functions as an interface to connect Virtual Satellite to your own application.
+The API supports the standard HTTP commands GET, PUT, POST and DELETE.
+
+[WARNING]
+.Connection is UNSECURED by default
+====
+By default the REST server communicates over HTTP, so your credentials (username and password) are transmitted unencrypted.
+====
+
+TIP: Configure the server to use the secure HTTPS connection.
+
+=== The REST API for Users
+
+Description of the reposiories api and levels (with an example request).
+
+=== The REST Server for Administrators
+
+Description of the server lifecycle (startup and shutdown).
+
+Example server configuration file. 
+
+LDAP and HTTPS.
+
+Description of the admin resource.
+
 
 [colophone]
 == Legal - License & Copyright
