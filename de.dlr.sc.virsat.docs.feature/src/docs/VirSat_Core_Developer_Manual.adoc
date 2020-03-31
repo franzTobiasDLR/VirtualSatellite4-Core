@@ -178,13 +178,18 @@ The Figure "<<RestServerOverview>>" gives an overview of the Server and its envi
 [#RestServerOverview]
 image::chapterHeadlessRestServer/REST_server_overview.png[Server Overview]
 
-A Server instance can maintain multiple repositories, with each repository connected to a git or SVN server.
-A repository has three components, that will later be described in detail.
-REST Clients can access the server using the HTTP commands GET, PUT, DELETE and POST. So a client can read or write into the Virtual Satellite model. 
+A Server instance can maintain multiple Server Repositories, with each repository connected to a git or SVN server.
+REST Clients can access the server using the HTTP commands GET, PUT, DELETE and POST. 
+So a client can read or write into the Virtual Satellite model. 
+The server has to provide functionality for administrators, that can manipulate the server configuration, and users.
+For that purpose it needs authentication and authorization.
+For authentication purposes an LDAP server can be connected to the REST server.
+The connection can be secured via HTTPS.
+Because every user can only access certain provided Server Repositories, there has to be a second authorization layer.
+
 The connected SVN/git repositories can also be directly changed from Clients using Virtual Satellite UI.
 So the server needs to resolve these conflicts and also handle simultaneous changes from multiple REST clients.
 The SVN/git repository is supposed to be the single source of truth in those cases.
-For authentication purposes an LDAP server can be connected to the REST server.
 
 === Components
 
@@ -194,21 +199,23 @@ Figure "<<RestServerComponents>>" gives a more detailed view on the REST Server 
 [#RestServerComponents]
 image::chapterHeadlessRestServer/REST_server_components.png[Server Components]
 
-A REST Client can send a request to a specified repository, in which it get's handled in three Layers:
+The server is divided into three main layers: the REST API (View), Controllers and Persistence (Model).
+Between the API and the controller also is an access check layer.
 
-In the Authentication Layer, the server checks if the Client is valid, either by using an external LDAP server or by basic HTTP authentication.
-If the client is not valid, the server responds with an access denied message.
+A REST Client can send a request to the provided REST API that is partitioned into multiple Resources: +
+An Admin Resource, in which an administrator can manipulate the server configuration, e.g. if the server should use HTTP or HTTPS. +
+Each Server Repository provided has its own Resource.
 
-The Administrative Layer can be accessed by functional accounts. In it repositories can be managed.
-It also provides an infrastructure (e.g. private and public key pairs) to de- and encrypt messages.
-For that purpose, it uses a cryptography component that contains a keystore to secure and persistent save generated keys.
+In the access check layer the credentials are obtained from the HTTP Header and it is checked if the requested Resources can be accessed.
+The credentials are handed over to be used for user role handling in the Virtual Satellite model.
 
-Connected to the model is the SVN/git Client Layer, that accesses the connected SVN/git repository similar to a Virtual Satellite Client. 
-For that it uses versioning, a local working directory with a local copy of the connected repository and the Virtual Satellite ENF Model.
-That way it can use the same user role management, to check if a resource can be accessed by the Client.
-In this Layer the requested resources are accessed, parsed into the JSON format and returned to the previous layer.
+Each Resource has an Controller.
+The main controller is the Server Controller handling the Admin Resource.
+In it's Server Configuration the server settings are stored.
+The Repository Controllers access the data model of the corresponding server repositories.
 
-Finally, after encrypting the response containing the accessed resource, it is sent to the REST Client.
+The persistence level is composed of Server Repositories, each with a Repository Configuration and a data model. 
+The data model is connected to a SVN or git backend.
 
 == Advanced Development Topics
 
