@@ -6,7 +6,7 @@
       provider-name="DLR (German Aerospace Center)"
       plugin="de.dlr.sc.virsat.branding.ui"
       license-feature="de.dlr.sc.virsat.license.feature"
-      license-feature-version="4.9.0.qualifier">
+      license-feature-version="4.11.0.qualifier">
 
    <description>
       This feature contains general user interface components for the requirements plugins

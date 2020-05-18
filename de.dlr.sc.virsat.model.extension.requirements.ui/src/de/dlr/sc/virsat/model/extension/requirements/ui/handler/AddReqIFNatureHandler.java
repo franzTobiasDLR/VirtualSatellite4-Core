@@ -26,9 +26,6 @@ import de.dlr.sc.virsat.model.extension.requirements.ui.Activator;
 
 
 /**
- * @author Tobias Franz
-	tobias.franz@dlr.de
- *
  */
 public class AddReqIFNatureHandler extends AbstractHandler implements IHandler {
 	@Override

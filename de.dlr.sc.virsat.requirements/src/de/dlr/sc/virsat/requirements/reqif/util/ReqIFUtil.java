@@ -31,7 +31,6 @@ public class ReqIFUtil {
 	/**
 	 * @param fileUri uri of the file under question
 	 * @return checks if the file is Reqif file, if so return true
-	 * TODO: Check root element instead
 	 */
 	public static boolean isReqIF(URI fileUri) {
 		if (fileUri == null || fileUri.fileExtension() == null) {
@@ -45,7 +44,6 @@ public class ReqIFUtil {
 	/**
 	 * @param resource of the file under question
 	 * @return checks if the file is Reqif file, if so return true
-	 * TODO: Check root element instead
 	 */
 	public static boolean isReqIF(IResource resource) {
 		if (resource == null || resource.getFullPath().getFileExtension() == null) {

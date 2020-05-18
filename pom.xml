@@ -152,9 +152,16 @@
 				<module>de.dlr.sc.virsat.model.extension.visualisation.ui</module>
 				
 				<!-- Extension for Requirements -->
+				<module>de.dlr.sc.virsat.requirements</module>
+				<module>de.dlr.sc.virsat.requirements.ui</module>
+				<module>de.dlr.sc.virsat.requirements.test</module>
+				
 				<module>de.dlr.sc.virsat.model.extension.requirements</module>
 				<module>de.dlr.sc.virsat.model.extension.requirements.test</module>
 				<module>de.dlr.sc.virsat.model.extension.requirements.ui</module>
+				
+				<module>de.dlr.sc.virsat.model.extension.requirements.reqif.builder</module>
+				<module>de.dlr.sc.virsat.model.extension.requirements.reqif.builder.test</module>
 				
 				<!-- The Test Extension for Verifying correctness of EMF.Edit implementations 
 					and Bean Model -->

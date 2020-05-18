@@ -16,6 +16,16 @@
 		Unit org.apache.commons.io.source version 2.6.0.v20190123-2029; 
 	}
 	
+	RepositoryLocation RMF url "http://download.eclipse.org/rmf/updates/releases/"{
+		Unit org.eclipse.rmf.reqif10.feature.feature.group version 0.13.0.201509161042;
+		Unit org.eclipse.rmf.reqif10.pror.feature.feature.group version 0.12.0.201503190302;
+	}
+	
+	// Needed for RMF
+	RepositoryLocation Sphinx url "http://download.eclipse.org/sphinx/releases/0.11.x" {
+		Unit org.eclipse.sphinx.emf.serialization.feature.group version newest;
+	}
+	
 	// Purely named Eclipse. The name is important for target models having this one as 
 	// super model. Then this name can be referenced to explicitly exclude
 	// certain features from the target model

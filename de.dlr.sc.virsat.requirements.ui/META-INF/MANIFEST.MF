@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: VirSat Core Requirements UI
 Bundle-SymbolicName: de.dlr.sc.virsat.requirements.ui;singleton:=true
-Bundle-Version: 4.9.1.qualifier
+Bundle-Version: 4.11.0.qualifier
 Automatic-Module-Name: de.dlr.sc.virsat.requirements.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: DLR (German Aerospace Center)
