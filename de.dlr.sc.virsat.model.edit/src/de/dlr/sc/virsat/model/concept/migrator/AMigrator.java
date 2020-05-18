@@ -9,8 +9,6 @@
  *******************************************************************************/
 package de.dlr.sc.virsat.model.concept.migrator;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +51,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.resource.impl.URIHandlerImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.edapt.common.IResourceSetFactory;
 import org.eclipse.emf.edapt.internal.migration.execution.ValidationLevel;
 import org.eclipse.emf.edapt.migration.MigrationException;
@@ -65,11 +63,13 @@ import org.eclipse.emf.edapt.spi.history.Release;
 import com.google.common.base.Function;
 
 import de.dlr.sc.virsat.model.concept.calculation.QualifiedEquationObjectHelper;
+import de.dlr.sc.virsat.model.concept.util.ConceptActivationHelper;
 import de.dlr.sc.virsat.model.dvlm.calculation.EquationDefinition;
 import de.dlr.sc.virsat.model.dvlm.calculation.IQualifiedEquationObject;
 import de.dlr.sc.virsat.model.dvlm.categories.Category;
 import de.dlr.sc.virsat.model.dvlm.categories.propertydefinitions.AProperty;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
+import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
 import de.dlr.sc.virsat.model.dvlm.general.IQualifiedName;
 import de.dlr.sc.virsat.model.dvlm.provider.DVLMEditPlugin;
 import de.dlr.sc.virsat.model.dvlm.structural.StructuralElement;
@@ -77,15 +77,18 @@ import de.dlr.sc.virsat.model.ecore.VirSatEcoreUtil;
 import de.dlr.sc.virsat.model.ecore.xmi.impl.DvlmXMIResourceFactoryImpl;
 
 /**
- * 
- * @author fisc_ph
- *
+ * Abstract class to implement a migrator for a concept.
+ * This class does a two step migration. First it migrates the current
+ * and previous concept to the latest DVLM release. Then it starts comparing
+ * both concepts and executes the migration.
  */
 
 public abstract class AMigrator implements IMigrator {
 
 	private IMerger.Registry mergerRegistry;
 	private IMatchEngine.Factory.Registry matchRegistry;
+	private ConceptActivationHelper activationHelper;
+	private Concept newNonActiveConcept;
 	
 	/**
 	 * Default Constructor
@@ -117,7 +120,7 @@ public abstract class AMigrator implements IMigrator {
 					// Otherwise if two objects have the same ID (for example a property was changed
 					// from being an IntProperty to be an EnumProperty)
 					// then EMFCompare will try to compare all their features against each other and
-					// crash since it doesnt foresee the case of comparing objects of different classes.
+					// crash since it doesn't foresee the case of comparing objects of different classes.
 					
 					String typeSuffix = "." + input.eClass().getName();
 					if (oldToNewObjectIds.containsKey(oldObjectIdFqn)) {
@@ -175,6 +178,19 @@ public abstract class AMigrator implements IMigrator {
 				super.removeFromTarget(diff, rightToLeft);
 				valueMatch.setRight(right);
 			}
+			
+			@Override
+			protected void addInTarget(ReferenceChange diff, boolean rightToLeft) {
+				//Activate new types that are copied to repository via migration
+				String fragement = EcoreUtil.getURI(diff.getValue()).fragment().replace("/", "");
+				//Only activate if types are not in the concept resource itself
+				if (newNonActiveConcept.eResource() != null && newNonActiveConcept.eResource().getEObject(fragement) == null) {
+					EObject activeReferenceValue = activationHelper.getActiveType(diff.getValue());
+					diff.setValue(activeReferenceValue);
+				}
+				super.addInTarget(diff, rightToLeft);
+			}
+			
 		};
 		IMerger featureMapMerger = new FeatureMapChangeMerger();
 		IMerger resourceAttachmentMerger = new ResourceAttachmentChangeMerger();
@@ -207,6 +223,29 @@ public abstract class AMigrator implements IMigrator {
 	}
 	
 	@Override
+	public Set<String> getNewDependencies(Concept concept, IMigrator previousMigrator) {
+		
+		String conceptId = concept.getFullQualifiedName() + "/";
+		Concept conceptNext = loadConceptXmi(conceptId + getResource());
+		
+		return getNewDependencies(concept, conceptNext);
+	}
+	
+	/**
+	 * Return new dependencies of new concept versions
+	 * @param conceptCurrent the current concept as it is in the repository
+	 * @param conceptNext the next concept version
+	 * @return A set of new concept names
+	 */
+	public Set<String> getNewDependencies(Concept conceptCurrent, Concept conceptNext) {
+		//new dependencies are dependencies of newer concept minus old dependencies
+		Set<String> newDependencies = ActiveConceptHelper.getConceptDependencies(conceptNext);
+		newDependencies.removeAll(ActiveConceptHelper.getConceptDependencies(conceptCurrent));
+		
+		return newDependencies;
+	}
+	
+	@Override
 	public void migrate(Concept conceptCurrent, IMigrator previousMigrator) {
 		String conceptId = conceptCurrent.getFullQualifiedName() + "/";
 		Concept conceptPrevious = loadConceptXmi(conceptId + previousMigrator.getResource());
@@ -225,6 +264,8 @@ public abstract class AMigrator implements IMigrator {
 	public void migrate(Concept conceptPrevious, Concept conceptCurrent, Concept conceptNext) {
 		IComparisonScope scope = new DefaultComparisonScope(conceptNext, conceptCurrent,  conceptPrevious);
 		Comparison comparison = EMFCompare.builder().setMatchEngineFactoryRegistry(matchRegistry).build().compare(scope);
+		activationHelper = new ConceptActivationHelper(conceptCurrent);
+		newNonActiveConcept = conceptNext;
 
 		List<Diff> differences = comparison.getDifferences();
 		cmHelper = new ConceptMigrationHelper(conceptCurrent);
@@ -547,17 +588,11 @@ public abstract class AMigrator implements IMigrator {
 	 * @return the loaded concept
 	 */
 	public Concept loadConceptXmi(String resourceName) {
-		Resource.Factory.Registry factoryRegistry = Resource.Factory.Registry.INSTANCE;
-	    Map<String, Object> extensionMap = factoryRegistry.getExtensionToFactoryMap();
-	    extensionMap.put("xmi", new DvlmXMIResourceFactoryImpl());
-	    extensionMap.put("concept", new DvlmXMIResourceFactoryImpl());
-		
 		URI conceptResourceUri = URI.createPlatformPluginURI(resourceName, true);
 		ResourceSet resSet = performMigration(conceptResourceUri);
 		Resource resource = resSet.getResource(conceptResourceUri, true);
 		
 		Concept concept = (Concept) resource.getContents().get(0);
-		
 		return concept;
 	}
 		
@@ -591,31 +626,37 @@ public abstract class AMigrator implements IMigrator {
 		IResourceSetFactory resSetFactory = new IResourceSetFactory() {
 			@Override
 			public ResourceSet createResourceSet() {
-	    		// Obtain a new resource set
-			    ResourceSet resourceSet = new ResourceSetImpl();
-			    
-			    // Implement a Uri handler to redirect the serialized platform URIs to Plugin URIs
-			    resourceSet.getURIConverter().getURIHandlers().add(0, new URIHandlerImpl() {
-
+				// Obtain a new resource set
+				ResourceSet resourceSet = new ResourceSetImpl() {
 					@Override
-					public InputStream createInputStream(URI uri, Map<?, ?> options) throws IOException {
-						URI redirectedUri = AMigrator.createInputStream(uri);
-						return super.createInputStream(redirectedUri, options);
+					public EObject getEObject(URI uri, boolean loadOnDemand) {
+						if (uri.toString().contains("concept.concept")) {
+							return null;
+						}
+						return super.getEObject(uri, loadOnDemand);
 					}
+				};
 				
-					
-					@Override
-					public boolean canHandle(URI uri) {
-						return uri.isPlatformResource();
-					}
-				});
-			
-			    return resourceSet;
+				Resource.Factory.Registry factoryRegistry = Resource.Factory.Registry.INSTANCE;
+				Map<String, Object> extensionMap = factoryRegistry.getExtensionToFactoryMap();
+				extensionMap.put("xmi", new DvlmXMIResourceFactoryImpl());
+				extensionMap.put("concept", new DvlmXMIResourceFactoryImpl());
+
+				resourceSet.setResourceFactoryRegistry(factoryRegistry);
+
+				return resourceSet;
 			}
 		};
 		
 		String nsURI = ReleaseUtils.getNamespaceURI(conceptResourceUri);
 		Migrator migrator = MigratorRegistry.getInstance().getMigrator(nsURI);
+		
+		if (migrator == null) {
+			DVLMEditPlugin.getPlugin().getLog().log(new Status(Status.ERROR, DVLMEditPlugin.PLUGIN_ID, 
+					"Could not get DVLM migrator for concept resource: " + conceptResourceUri));
+			//Check that all dependent concepts and their plugins are available in platform...  
+			return new ResourceSetImpl();
+		}
 		
 		migrator.setResourceSetFactory(resSetFactory);
 		Release release = migrator.getRelease(conceptResourceUri).iterator().next();
@@ -623,7 +664,7 @@ public abstract class AMigrator implements IMigrator {
 			if (!release.isLatestRelease()) {
 				migrator.setLevel(ValidationLevel.NONE);
 				return migrator.migrateAndLoad(Collections.singletonList(conceptResourceUri), release, null, new NullProgressMonitor());
-			}
+			} 
 		} catch (MigrationException e) {
 			DVLMEditPlugin.getPlugin().getLog().log(new Status(Status.ERROR, DVLMEditPlugin.PLUGIN_ID, Status.ERROR, "Failed to migrate a Concept", e));
 		}

@@ -30,12 +30,12 @@ class GenerateConceptPluginXmlTest {
 	@Inject extension ParseHelper<Concept>
 
 	Concept concept
-	final val TEST_CONCEPT_NAME = "testConcept"
-	final val TEST_CATEGORY_NAME = "testCategory"
-	final val TEST_STRUCTURAL_1_NAME = "testStructural1";
-	final val TEST_STRUCTURAL_2_NAME = "testStructural2";
-	final val TEST_EXTRACT_PROTECTED_REGION = "testExtractProtectedRegion"
-	final val TEST_VERSION = "1.1"
+	val TEST_CONCEPT_NAME = "testConcept"
+	val TEST_CATEGORY_NAME = "testCategory"
+	val TEST_STRUCTURAL_1_NAME = "testStructural1";
+	val TEST_STRUCTURAL_2_NAME = "testStructural2";
+	val TEST_EXTRACT_PROTECTED_REGION = "testExtractProtectedRegion"
+	val TEST_VERSION = "1.1"
 	
 	val pluginGenerator = new GeneratePluginXml
 
@@ -57,8 +57,8 @@ class GenerateConceptPluginXmlTest {
 	}
 	
 	@Test
-    def void testCreateUiXml() {
-    	concept = '''
+	def void testCreateXml() {
+		concept = '''
 			Concept «TEST_CONCEPT_NAME» version «TEST_VERSION» {
 				
 				StructuralElement «TEST_STRUCTURAL_1_NAME» {
@@ -87,5 +87,38 @@ class GenerateConceptPluginXmlTest {
 		
 		val expected = pluginGenerator.createXml(concept, concept.name)
 		GeneratorJunitAssert.assertEqualContent(expected, "/resources/expectedOutputFilesForGenerators/ConceptPlugin.xml");
+	}
+	
+	@Test
+	def void createXmlDeprecatedValidator() {
+		concept = '''
+			Concept «TEST_CONCEPT_NAME» version «TEST_VERSION» {
+				
+				StructuralElement «TEST_STRUCTURAL_1_NAME» {
+					IsRootStructuralElement;
+				}
+				
+				StructuralElement «TEST_STRUCTURAL_2_NAME» {
+					Applicable For [«TEST_STRUCTURAL_1_NAME»];
+				}				
+				
+				Category «TEST_CATEGORY_NAME» {
+					StringProperty tpSringArrayDynamic[];
+					StringProperty tpSringArrayStatic[5];
+					IntProperty tpIntArrayDynamic[];
+					IntProperty tpIntArrayStatic[6];
+					FloatProperty tpFloatArrayDynamic[];
+					FloatProperty tpFloatArrayStatic[7];
+					BooleanProperty tpBooleanArrayDynamic[];
+					BooleanProperty tpBooleanArrayStatic[8];
+					Resource tpResourceDynamich[];
+					Resource tpResourceStatic[9];
+					Applicable For All;
+				}
+			}
+		'''.parse
+		
+		val expected = pluginGenerator.createXmlDeprecatedValidator(concept, concept.name)
+		GeneratorJunitAssert.assertEqualContent(expected, "/resources/expectedOutputFilesForGenerators/ConceptPluginDeprecatedValidator.xml");
 	}
 }

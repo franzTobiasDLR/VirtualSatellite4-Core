@@ -9,14 +9,14 @@
  *******************************************************************************/
 package de.dlr.sc.virsat.model.dvlm.qudv.util;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,9 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.dlr.sc.virsat.model.dvlm.qudv.AQuantityKind;
@@ -58,15 +56,6 @@ public class QudvUnitHelperTest {
 	@Before
 	public void setUp() throws Exception {
 		qudvHelper = QudvUnitHelper.getInstance();
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}	
-	
-	@BeforeClass
-	public static void setUpOnce() {
-		
 	}
 	
 	@Test
@@ -135,7 +124,7 @@ public class QudvUnitHelperTest {
 		Double factor = 10.45E-3;
 		Double offset = 89.67;
 		
-		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "l", "long John", "http://length.virsat.dlr.de"); 
+		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "l", "long", "http://length.virsat.dlr.de"); 
 		SimpleUnit refUnit = qudvHelper.createSimpleUnit("simpleUnit", "su", "this is the description of su", "http://su.virsat.dlr.de", null);
 		
 		AffineConversionUnit affineConversionUnit = qudvHelper.createAffineConversionUnit(name, symbol, desc, definitionURI, length, refUnit, factor, offset);
@@ -168,7 +157,7 @@ public class QudvUnitHelperTest {
 		String definitionURI = "theDefinitionURI";
 		Double factor = 10.45E-3;
 		
-		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "l", "long John", "http://length.virsat.dlr.de");
+		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "l", "long", "http://length.virsat.dlr.de");
 		AUnit refUnit = qudvHelper.createSimpleUnit("simpleUnit", "su", "this is the description of su", "http://su.virsat.dlr.de", null);
 		
 		LinearConversionUnit linearConversionUnit = qudvHelper.createLinearConversionUnit(name, symbol, desc, definitionURI, length, refUnit, factor);
@@ -239,16 +228,11 @@ public class QudvUnitHelperTest {
 		
 		String destination = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString() + "/exportQudv.qudv"; 
 
-		try {
-			qudvHelper.exportModeltoFile(sou1, destination);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		qudvHelper.exportModeltoFile(sou1, destination);
 		
 		assertTrue(sou1.getUnit().contains(simpleUnit));		
 		
-		SystemOfUnits importedSoU = null;
-		importedSoU = qudvHelper.importModelFromFile(destination);
+		SystemOfUnits importedSoU = qudvHelper.importModelFromFile(destination);
 
 		assertNotNull("System of Units got correctly loaded", importedSoU);
 		
@@ -441,7 +425,7 @@ public class QudvUnitHelperTest {
 	@Test
 	public void haveSameQuantityKindWithUnitTest() {
 		//we need to create some units and quantityKinds
-		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long John", "http://length.virsat.dlr.de");
+		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long", "http://length.virsat.dlr.de");
 		AQuantityKind mass = qudvHelper.createSimpleQuantityKind("mass", "M", "heavy Mass", "http://mass.virsat.dlr.de");
 
 		AUnit g = qudvHelper.createSimpleUnit("gramms", "g", "gramms are a base unit for mass", "http://gramms.virsat.dlr.de", mass);
@@ -465,7 +449,7 @@ public class QudvUnitHelperTest {
 	public void haveSameQuantityKindWithMapTest() {
 		//make some simple quantityKinds
 		AQuantityKind dimensionlessQK = qudvHelper.createSimpleQuantityKind(QudvUnitHelper.DIMENSIONLESS_QK_NAME, "U", "dimensionlessQK", "");
-		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long John", "http://length.virsat.dlr.de");
+		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long", "http://length.virsat.dlr.de");
 		AQuantityKind mass = qudvHelper.createSimpleQuantityKind("mass", "M", "heavy Mass", "http://mass.virsat.dlr.de");
 		AQuantityKind time = qudvHelper.createSimpleQuantityKind("Time", "T", "timeQK", "");
 
@@ -510,24 +494,21 @@ public class QudvUnitHelperTest {
 	@Test
 	public void getBaseQuantityKindsTest() {
 		//make some simple quantityKinds
-		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long John", "http://length.virsat.dlr.de");
+		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long", "http://length.virsat.dlr.de");
 		AQuantityKind mass = qudvHelper.createSimpleQuantityKind("mass", "M", "heavy Mass", "http://mass.virsat.dlr.de");
 		AQuantityKind time = qudvHelper.createSimpleQuantityKind("Time", "T", "timeQK", "");
-		
-		Map<AQuantityKind, Double> factorMap = new HashMap<AQuantityKind, Double>();
-		Map<AQuantityKind, Double> forceBaseMap = new HashMap<AQuantityKind, Double>();
-		Map<AQuantityKind, Double> accelerationBaseMap = new HashMap<AQuantityKind, Double>();
 		
 		// some coefficient 
 		final Double M2 = -2.0;
 		
 		//force as a derived quantity kind
+		Map<AQuantityKind, Double> factorMap = new HashMap<AQuantityKind, Double>();
 		factorMap.clear();
 		factorMap.put(length, 1.0);
 		factorMap.put(time, M2);
 		DerivedQuantityKind acceleration = qudvHelper.createAndAddDerivedQuantityKind("acceleration", "L¹ T⁻²", "accelerationQK", "",  factorMap);
 		
-		accelerationBaseMap = qudvHelper.getBaseQuantityKinds(acceleration);
+		Map<AQuantityKind, Double> accelerationBaseMap = qudvHelper.getBaseQuantityKinds(acceleration);
 		
 		//check for the right number of elements in the forceBaseMap
 		assertEquals(2, accelerationBaseMap.size());
@@ -550,7 +531,7 @@ public class QudvUnitHelperTest {
 
 		DerivedQuantityKind force = qudvHelper.createAndAddDerivedQuantityKind("Force", "L¹ M¹ T⁻²", "forceQK", "",  factorMap);
 		
-		forceBaseMap = qudvHelper.getBaseQuantityKinds(force);
+		Map<AQuantityKind, Double> forceBaseMap = qudvHelper.getBaseQuantityKinds(force);
 		
 		//check for the right number of elements in the forceBaseMap
 		assertEquals(3, forceBaseMap.size());
@@ -569,7 +550,7 @@ public class QudvUnitHelperTest {
 	public void isDimensionlessTest() {
 		//make some simple quantityKinds
 		AQuantityKind dimensionlessQK = qudvHelper.createSimpleQuantityKind(QudvUnitHelper.DIMENSIONLESS_QK_NAME, "U", "dimensionlessQK", "");
-		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long John", "http://length.virsat.dlr.de");
+		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long", "http://length.virsat.dlr.de");
 		AUnit m = qudvHelper.createSimpleUnit("metre", "m", "meters are used to measure lengths", "http://meters.virsat.dlr.de", length);
 		AUnit unitWithoutQK = qudvHelper.createSimpleUnit("noUnit", "nU", "", "", null);
 		AUnit dimensionlessUnit = qudvHelper.createSimpleUnit("dimensionlessUnit", "nU", "", "", dimensionlessQK);
@@ -581,7 +562,7 @@ public class QudvUnitHelperTest {
 	@Test
 	public void mergeMapsTest() {
 		//make some simple quantityKinds
-		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long John", "http://length.virsat.dlr.de");
+		AQuantityKind length = qudvHelper.createSimpleQuantityKind("length", "L", "long", "http://length.virsat.dlr.de");
 		AQuantityKind mass = qudvHelper.createSimpleQuantityKind("mass", "M", "heavy Mass", "http://mass.virsat.dlr.de");
 		AQuantityKind temperature = qudvHelper.createSimpleQuantityKind("Temperature", "Θ", "temperatureQK", "");
 		AQuantityKind electricCurrent = qudvHelper.createSimpleQuantityKind("Electric current", "I", "electricCurrentQK", "");
@@ -598,8 +579,7 @@ public class QudvUnitHelperTest {
 		map2.put(electricCurrent, 4.2);
 		
 		//now merge the maps and make some checks
-		Map<AQuantityKind, Double> mergedMap = new HashMap<AQuantityKind, Double>();
-		mergedMap = qudvHelper.mergeMaps(map1, map2, QudvUnitHelper.QudvCalcMethod.ADD);
+		Map<AQuantityKind, Double> mergedMap = qudvHelper.mergeMaps(map1, map2, QudvUnitHelper.QudvCalcMethod.ADD);
 		
 		//check if all four keys are present
 		assertEquals(3, mergedMap.size());

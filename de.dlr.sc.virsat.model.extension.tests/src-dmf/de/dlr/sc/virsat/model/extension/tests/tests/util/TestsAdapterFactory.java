@@ -1,18 +1,20 @@
-/*******************************************************************************
+/**
  * Copyright (c) 2008-2019 German Aerospace Center (DLR), Simulation and Software Technology, Germany.
- *
+ * 
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
  * http://www.eclipse.org/legal/epl-2.0.
- *
+ * 
  * SPDX-License-Identifier: EPL-2.0
- *******************************************************************************/
+ */
 package de.dlr.sc.virsat.model.extension.tests.tests.util;
 
 import de.dlr.sc.virsat.model.dvlm.dmf.DObject;
 
 import de.dlr.sc.virsat.model.dvlm.general.IName;
 import de.dlr.sc.virsat.model.dvlm.general.IUuid;
+
+import de.dlr.sc.virsat.model.ext.core.core.GenericCategory;
 
 import de.dlr.sc.virsat.model.extension.tests.tests.*;
 
@@ -136,6 +138,14 @@ public class TestsAdapterFactory extends AdapterFactoryImpl {
 				return createTestMassParametersAdapter();
 			}
 			@Override
+			public Adapter caseTestCrossLinkedParametersWithCalculation(TestCrossLinkedParametersWithCalculation object) {
+				return createTestCrossLinkedParametersWithCalculationAdapter();
+			}
+			@Override
+			public Adapter caseEReferenceTest(EReferenceTest object) {
+				return createEReferenceTestAdapter();
+			}
+			@Override
 			public Adapter caseIUuid(IUuid object) {
 				return createIUuidAdapter();
 			}
@@ -146,6 +156,10 @@ public class TestsAdapterFactory extends AdapterFactoryImpl {
 			@Override
 			public Adapter caseDObject(DObject object) {
 				return createDObjectAdapter();
+			}
+			@Override
+			public Adapter caseGenericCategory(GenericCategory object) {
+				return createGenericCategoryAdapter();
 			}
 			@Override
 			public Adapter defaultCase(EObject object) {
@@ -364,6 +378,34 @@ public class TestsAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
+	 * Creates a new adapter for an object of class '{@link de.dlr.sc.virsat.model.extension.tests.tests.TestCrossLinkedParametersWithCalculation <em>Test Cross Linked Parameters With Calculation</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see de.dlr.sc.virsat.model.extension.tests.tests.TestCrossLinkedParametersWithCalculation
+	 * @generated
+	 */
+	public Adapter createTestCrossLinkedParametersWithCalculationAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link de.dlr.sc.virsat.model.extension.tests.tests.EReferenceTest <em>EReference Test</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see de.dlr.sc.virsat.model.extension.tests.tests.EReferenceTest
+	 * @generated
+	 */
+	public Adapter createEReferenceTestAdapter() {
+		return null;
+	}
+
+	/**
 	 * Creates a new adapter for an object of class '{@link de.dlr.sc.virsat.model.dvlm.general.IUuid <em>IUuid</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
@@ -402,6 +444,20 @@ public class TestsAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createDObjectAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link de.dlr.sc.virsat.model.ext.core.core.GenericCategory <em>Generic Category</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see de.dlr.sc.virsat.model.ext.core.core.GenericCategory
+	 * @generated
+	 */
+	public Adapter createGenericCategoryAdapter() {
 		return null;
 	}
 

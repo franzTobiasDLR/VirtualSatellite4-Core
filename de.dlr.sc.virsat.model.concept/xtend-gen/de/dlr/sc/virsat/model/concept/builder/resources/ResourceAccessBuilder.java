@@ -1,9 +1,11 @@
 /**
- * This file is part of the VirSat project.
+ * Copyright (c) 2008-2019 German Aerospace Center (DLR), Simulation and Software Technology, Germany.
  * 
- * Copyright (c) 2008-2017
- * German Aerospace Center (DLR), Simulation and Software Technology, Germany
- * All rights reserved
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * SPDX-License-Identifier: EPL-2.0
  */
 package de.dlr.sc.virsat.model.concept.builder.resources;
 
@@ -58,11 +60,11 @@ import org.w3c.dom.Node;
  */
 @SuppressWarnings("all")
 public class ResourceAccessBuilder extends IncrementalProjectBuilder {
-  public final static String MANIFEST_MF = "MANIFEST.MF";
+  public static final String MANIFEST_MF = "MANIFEST.MF";
   
-  public final static String PLUGIN_XML = "plugin.xml";
+  public static final String PLUGIN_XML = "plugin.xml";
   
-  public final static String BUILDER_ID = "de.dlr.sc.virsat.model.concept.resourceAccessBuilder";
+  public static final String BUILDER_ID = "de.dlr.sc.virsat.model.concept.resourceAccessBuilder";
   
   private final String[] CONCATENATE_ID = { "CategoryAssignmentBean", "extension", "command", "image", "handler", "conceptImage" };
   

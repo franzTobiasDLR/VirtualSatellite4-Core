@@ -1,12 +1,12 @@
-/*******************************************************************************
+/**
  * Copyright (c) 2008-2019 German Aerospace Center (DLR), Simulation and Software Technology, Germany.
- *
+ * 
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
  * http://www.eclipse.org/legal/epl-2.0.
- *
+ * 
  * SPDX-License-Identifier: EPL-2.0
- *******************************************************************************/
+ */
 package de.dlr.sc.virsat.model.extension.tests.tests.provider;
 
 import de.dlr.sc.virsat.model.extension.tests.tests.util.TestsAdapterFactory;
@@ -378,11 +378,58 @@ public class TestsItemProviderAdapterFactory extends TestsAdapterFactory impleme
 	}
 
 	/**
+	 * This keeps track of the one adapter used for all {@link de.dlr.sc.virsat.model.extension.tests.tests.TestCrossLinkedParametersWithCalculation} instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected TestCrossLinkedParametersWithCalculationItemProvider testCrossLinkedParametersWithCalculationItemProvider;
+
+	/**
+	 * This creates an adapter for a {@link de.dlr.sc.virsat.model.extension.tests.tests.TestCrossLinkedParametersWithCalculation}.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public Adapter createTestCrossLinkedParametersWithCalculationAdapter() {
+		if (testCrossLinkedParametersWithCalculationItemProvider == null) {
+			testCrossLinkedParametersWithCalculationItemProvider = new TestCrossLinkedParametersWithCalculationItemProvider(this);
+		}
+
+		return testCrossLinkedParametersWithCalculationItemProvider;
+	}
+
+	/**
+	 * This keeps track of the one adapter used for all {@link de.dlr.sc.virsat.model.extension.tests.tests.EReferenceTest} instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected EReferenceTestItemProvider eReferenceTestItemProvider;
+
+	/**
+	 * This creates an adapter for a {@link de.dlr.sc.virsat.model.extension.tests.tests.EReferenceTest}.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public Adapter createEReferenceTestAdapter() {
+		if (eReferenceTestItemProvider == null) {
+			eReferenceTestItemProvider = new EReferenceTestItemProvider(this);
+		}
+
+		return eReferenceTestItemProvider;
+	}
+
+	/**
 	 * This returns the root adapter factory that contains this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ComposeableAdapterFactory getRootAdapterFactory() {
 		return parentAdapterFactory == null ? this : parentAdapterFactory.getRootAdapterFactory();
 	}
@@ -393,6 +440,7 @@ public class TestsItemProviderAdapterFactory extends TestsAdapterFactory impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setParentAdapterFactory(ComposedAdapterFactory parentAdapterFactory) {
 		this.parentAdapterFactory = parentAdapterFactory;
 	}
@@ -441,6 +489,7 @@ public class TestsItemProviderAdapterFactory extends TestsAdapterFactory impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void addListener(INotifyChangedListener notifyChangedListener) {
 		changeNotifier.addListener(notifyChangedListener);
 	}
@@ -451,6 +500,7 @@ public class TestsItemProviderAdapterFactory extends TestsAdapterFactory impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void removeListener(INotifyChangedListener notifyChangedListener) {
 		changeNotifier.removeListener(notifyChangedListener);
 	}
@@ -461,6 +511,7 @@ public class TestsItemProviderAdapterFactory extends TestsAdapterFactory impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void fireNotifyChanged(Notification notification) {
 		changeNotifier.fireNotifyChanged(notification);
 
@@ -475,6 +526,7 @@ public class TestsItemProviderAdapterFactory extends TestsAdapterFactory impleme
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void dispose() {
 		if (testCategoryAllPropertyItemProvider != null) testCategoryAllPropertyItemProvider.dispose();
 		if (testCategoryCompositionItemProvider != null) testCategoryCompositionItemProvider.dispose();
@@ -489,6 +541,8 @@ public class TestsItemProviderAdapterFactory extends TestsAdapterFactory impleme
 		if (testCategoryExtendsItemProvider != null) testCategoryExtendsItemProvider.dispose();
 		if (testParameterItemProvider != null) testParameterItemProvider.dispose();
 		if (testMassParametersItemProvider != null) testMassParametersItemProvider.dispose();
+		if (testCrossLinkedParametersWithCalculationItemProvider != null) testCrossLinkedParametersWithCalculationItemProvider.dispose();
+		if (eReferenceTestItemProvider != null) eReferenceTestItemProvider.dispose();
 	}
 
 }

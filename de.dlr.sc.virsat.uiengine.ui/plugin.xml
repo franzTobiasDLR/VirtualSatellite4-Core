@@ -80,6 +80,11 @@
             snippet="de.dlr.sc.virsat.uiengine.ui.editor.snippets.general.UiSnippetIName">
       </uiSnippet>
       <uiSnippet
+            id="de.dlr.sc.virsat.uiengine.ui.uiSnippetBetaWarning"
+            section="de.dlr.sc.virsat.uiengine.ui.editorSection.General"
+            snippet="de.dlr.sc.virsat.uiengine.ui.editor.snippets.general.UiSnippetBetaWarning">
+      </uiSnippet>
+      <uiSnippet
             id="de.dlr.sc.virsat.uiengine.ui.uiSnippetOrigin"
             section="de.dlr.sc.virsat.uiengine.ui.editorSection.General"
             snippet="de.dlr.sc.virsat.uiengine.ui.editor.snippets.general.UiSnippetIInheritanceLink">
@@ -110,6 +115,11 @@
             snippet="de.dlr.sc.virsat.uiengine.ui.editor.snippets.general.UiSnippetActiveConcepts">
       </uiSnippet>
       <uiSnippet
+            id="de.dlr.sc.virsat.uiengine.ui.uiSnippetSuppressedValidators"
+            section="de.dlr.sc.virsat.uiengine.ui.editorSection.General"
+            snippet="de.dlr.sc.virsat.uiengine.ui.editor.snippets.general.UiSnippetSuppressedValidators">
+      </uiSnippet>
+      <uiSnippet
             id="de.dlr.sc.virsat.uiengine.ui.uiSnippetRoleManagement"
             section="de.dlr.sc.virsat.uiengine.ui.editorSection.General"
             snippet="de.dlr.sc.virsat.uiengine.ui.editor.snippets.general.UiSnippetRoleManagement">
@@ -126,4 +136,38 @@
             restorable="true">
       </view>
    </extension>
+      <extension
+         point="de.dlr.sc.virsat.external.lib.commons.cli.CommandLineArguments">
+     <clArgs
+           command="ignoreBetaConcepts">
+     </clArgs>
+   </extension>
+   <extension
+	  point="org.eclipse.ui.exportWizards">
+	   <wizard
+	     category="de.dlr.virsat.global.category.export.virsat"
+	     class="de.dlr.sc.virsat.uiengine.ui.mat.MatExportWizard"
+	     id="de.dlr.sc.virsat.uiengine.ui.mat.MatExportPage"
+	     icon="resources/icons/VirSat_Mat.gif"
+	     name="Mat Export Wizard">
+	   </wizard>
+      <category
+            id="de.dlr.virsat.global.category.export.virsat"
+            name="Virtual Satellite">
+      </category>
+	</extension>
+	<extension
+	  point="org.eclipse.ui.importWizards">
+	   <wizard
+	     category="de.dlr.virsat.global.category.import.virsat"
+	     class="de.dlr.sc.virsat.uiengine.ui.mat.MatImportWizard"
+	     id="de.dlr.sc.virsat.uiengine.ui.mat.MatImportWizard"
+	     icon="resources/icons/VirSat_Mat.gif"
+	     name="Mat Import Wizard">
+	   </wizard>
+	  <category
+            id="de.dlr.virsat.global.category.import.virsat"
+            name="Virtual Satellite">
+      </category>
+	</extension>
 </plugin>

@@ -120,8 +120,8 @@
 	</image>
 	<image
 	      commandId="de.dlr.sc.virsat.model.extension.requirements.ui.command.AddRequirement"
-	      disabledIcon="resources/icons/de.dlr.sc.virsat.model.extension.requirements_disabled.gif"
-	      icon="resources/icons/de.dlr.sc.virsat.model.extension.requirements.gif">
+	      disabledIcon="resources/icons/Requirement_disabled.gif"
+	      icon="resources/icons/Requirement.gif">
 	</image>
 	<image
 	      commandId="de.dlr.sc.virsat.model.extension.requirements.ui.command.AddAttributeValue"
@@ -620,7 +620,7 @@
 		</uiSnippet>
 	</extension>
 	<!-- Plugin.XML Protected Region Start -->
-	<extension
+<extension
          point="org.eclipse.ui.commands">
 		 <command
 		       id="de.dlr.sc.virsat.model.extension.requirements.ui.AddReqIFNature"
@@ -709,4 +709,5 @@
           type="java.lang.Object">
     </propertyTester>
   </extension>
+	<!-- Plugin.XML Protected Region End -->
 </plugin>

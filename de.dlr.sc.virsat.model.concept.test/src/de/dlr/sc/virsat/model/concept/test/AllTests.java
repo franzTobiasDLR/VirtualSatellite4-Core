@@ -16,6 +16,7 @@ import org.junit.runners.Suite.SuiteClasses;
 import de.dlr.sc.virsat.model.concept.ConceptLanguageTest;
 import de.dlr.sc.virsat.model.concept.builder.resources.ResourceAccessBuilderTest;
 import de.dlr.sc.virsat.model.concept.generator.ConceptOutputConfigurationProviderTest;
+import de.dlr.sc.virsat.model.concept.generator.ConceptPreprocessorTest;
 import de.dlr.sc.virsat.model.concept.generator.ImportManagerTest;
 import de.dlr.sc.virsat.model.concept.generator.beans.GenerateCategoryBeansTest;
 import de.dlr.sc.virsat.model.concept.generator.beans.GenerateStructuralElementBeansTest;
@@ -35,6 +36,7 @@ import de.dlr.sc.virsat.model.concept.generator.tests.GenerateAllTestsTest;
 import de.dlr.sc.virsat.model.concept.generator.tests.GenerateCategoryTestsTest;
 import de.dlr.sc.virsat.model.concept.generator.tests.GenerateMigratorTestsTest;
 import de.dlr.sc.virsat.model.concept.generator.tests.GenerateStructuralElementTestsTest;
+import de.dlr.sc.virsat.model.concept.generator.tests.GenerateValidatorTestsTest;
 import de.dlr.sc.virsat.model.concept.generator.validator.GenerateValidatorTest;
 import de.dlr.sc.virsat.model.concept.project.ConceptProjectGenerationRunnableTest;
 import de.dlr.sc.virsat.model.concept.project.filecontent.ConceptFeatureBuildPropertiesGeneratorTest;
@@ -86,7 +88,9 @@ import junit.framework.JUnit4TestAdapter;
 				ConceptFragmentTestManifestGeneratorTest.class,
 				GenerateAllTestsTest.class,
 				GenerateMigratorTestsTest.class,
-				ResourceAccessBuilderTest.class
+				GenerateValidatorTestsTest.class,
+				ResourceAccessBuilderTest.class,
+				ConceptPreprocessorTest.class
 				})
 
 /**

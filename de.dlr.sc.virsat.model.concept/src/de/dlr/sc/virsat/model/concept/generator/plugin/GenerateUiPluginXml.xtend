@@ -30,7 +30,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 class GenerateUiPluginXml {
 	
 	@Accessors
-	private PluginXmlReader pluginXmlReader;
+	PluginXmlReader pluginXmlReader;
 	
 	def serializeModel(Concept concept, PluginXmlReader pluginXmlReader, IFileSystemAccess fsa) {
 		this.pluginXmlReader = pluginXmlReader;
@@ -107,7 +107,7 @@ class GenerateUiPluginXml {
 				</menuContribution>
 			</extension>
 			«declareEditorSection(concept)»
-			«IF !concept.categories.empty»
+			«IF !concept.nonAbstractCategories.empty»
 			<extension point="de.dlr.sc.virsat.uiengine.ui.EditorUiSnippets">
 				«FOR category : concept.nonAbstractCategories»
 					«declareUiSnippetTables(concept, category)»

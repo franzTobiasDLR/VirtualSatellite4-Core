@@ -23,7 +23,9 @@ import de.dlr.sc.virsat.model.dvlm.concepts.ConceptsFactory;
 
 import de.dlr.sc.virsat.model.dvlm.general.GeneralPackage;
 
+import de.dlr.sc.virsat.model.dvlm.roles.IUserContext;
 import de.dlr.sc.virsat.model.dvlm.roles.RoleManagementCheckCommand;
+import de.dlr.sc.virsat.model.dvlm.roles.UserRegistry;
 import de.dlr.sc.virsat.model.dvlm.util.DVLMCommandParameterApplicableForCheck;
 
 import java.util.Collection;
@@ -105,6 +107,7 @@ public class RepositoryItemProvider
 			addRootEntitiesPropertyDescriptor(object);
 			addRoleManagementPropertyDescriptor(object);
 			addUnitManagementPropertyDescriptor(object);
+			addSuppressedValidatorsPropertyDescriptor(object);
 		}
 		return itemPropertyDescriptors;
 	}
@@ -220,6 +223,28 @@ public class RepositoryItemProvider
 	}
 
 	/**
+	 * This adds a property descriptor for the Suppressed Validators feature.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected void addSuppressedValidatorsPropertyDescriptor(Object object) {
+		itemPropertyDescriptors.add
+			(createItemPropertyDescriptor
+				(((ComposeableAdapterFactory)adapterFactory).getRootAdapterFactory(),
+				 getResourceLocator(),
+				 getString("_UI_Repository_suppressedValidators_feature"),
+				 getString("_UI_PropertyDescriptor_description", "_UI_Repository_suppressedValidators_feature", "_UI_Repository_type"),
+				 DVLMPackage.Literals.REPOSITORY__SUPPRESSED_VALIDATORS,
+				 true,
+				 false,
+				 false,
+				 ItemPropertyDescriptor.GENERIC_VALUE_IMAGE,
+				 null,
+				 null));
+	}
+
+	/**
 	 * This specifies how to implement {@link #getChildren} and is used to deduce an appropriate feature for an
 	 * {@link org.eclipse.emf.edit.command.AddCommand}, {@link org.eclipse.emf.edit.command.RemoveCommand} or
 	 * {@link org.eclipse.emf.edit.command.MoveCommand} in {@link #createCommand}.
@@ -261,7 +286,6 @@ public class RepositoryItemProvider
 	 */
 	@Override
 	public Object getImage(Object object) {
-	
 		return overlayImage(object, getResourceLocator().getImage("full/obj16/Repository")); 
 	}
 	
@@ -294,6 +318,7 @@ public class RepositoryItemProvider
 
 		switch (notification.getFeatureID(Repository.class)) {
 			case DVLMPackage.REPOSITORY__UUID:
+			case DVLMPackage.REPOSITORY__SUPPRESSED_VALIDATORS:
 				fireNotifyChanged(new ViewerNotification(notification, notification.getNotifier(), false, true));
 				return;
 			case DVLMPackage.REPOSITORY__ROOT_ENTITIES:
@@ -333,7 +358,6 @@ public class RepositoryItemProvider
  	*/
 	@Override
 	protected Command createAddCommand(EditingDomain domain, EObject owner, EStructuralFeature feature,	Collection<?> collection, int index) {
-		
 		// Override functionality with the undoable ADD Command that performs undo by taking out the collection from the containing list
 		// rather than reducing the index and assuming the last objects on the list have been added by the current command
 		return new UndoableAddCommand(domain, owner, feature, collection, index);
@@ -350,7 +374,15 @@ public class RepositoryItemProvider
  	*/
 	@Override
 	public Command createCommand(Object object, EditingDomain domain, Class<? extends Command> commandClass, CommandParameter commandParameter) {
-				
+		
+		// Set the UserContext either from the SystemUserRegistry or
+		// from the Domain if it exists
+		IUserContext userContext = UserRegistry.getInstance();
+		if (domain instanceof IUserContext) {
+			userContext = (IUserContext) domain;
+		}
+		
+		
 		// For the Repository and StructuralElementInstances we prefer the command for the aplicablefor paradigm
 		// If the requested command is not valid for the current obejcts an unexecutable command will be handed back instead
 		DVLMCommandParameterApplicableForCheck commandParameterCheck = new DVLMCommandParameterApplicableForCheck(commandParameter);
@@ -365,7 +397,7 @@ public class RepositoryItemProvider
 			|| (commandClass == CreateChildCommand.class)) {
 			
 			if (!commandParameterCheck.isValidCommandParameter(commandParameter)) {
-				return new RoleManagementCheckCommand(UnexecutableCommand.INSTANCE, commandParameter);
+				return new RoleManagementCheckCommand(UnexecutableCommand.INSTANCE, commandParameter, userContext);
 			}
 		}		
 		// We don't want to allow remove or delete operations on concepts that have been introduced into the model
@@ -375,21 +407,15 @@ public class RepositoryItemProvider
 			if (removeConcept.get() || (commandParameter.getValue() instanceof Concept)) {
 				return UnexecutableCommand.INSTANCE;
 			}
-		} 
-	    		
+		}
 		// For all other commands get the original one
 		Command originalCommand = super.createCommand(object, domain, commandClass, commandParameter);
-				
-	    
-	    
-	    		
-	    	
 		// A RolemanagementCheckCommand should not necessarily be wrapped into another RoleManagementCheck Command
 		if (originalCommand instanceof RoleManagementCheckCommand) {
 			return originalCommand;
 		} else {
 			// And wrap it into our command checking for the proper access rights
-			return new RoleManagementCheckCommand(originalCommand, commandParameter);	
+			return new RoleManagementCheckCommand(originalCommand, commandParameter, userContext);	
 		}
 	}
 

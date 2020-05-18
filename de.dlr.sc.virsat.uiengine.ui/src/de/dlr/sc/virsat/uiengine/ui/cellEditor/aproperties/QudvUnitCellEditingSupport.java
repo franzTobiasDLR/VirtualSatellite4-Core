@@ -149,12 +149,6 @@ public class QudvUnitCellEditingSupport extends ValuePropertyCellEditingSupport 
 	}
 
 	@Override
-	protected void setValue(Object element, Object userInputValue) {
-		// TODO Auto-generated method stub
-		super.setValue(element, userInputValue);
-	}
-
-	@Override
 	protected Object getValue(Object element) {
 		APropertyInstance propertyInstance = getPropertyInstance(element);
 		AUnit unit = ((UnitValuePropertyInstance) propertyInstance).getUnit();
@@ -164,7 +158,7 @@ public class QudvUnitCellEditingSupport extends ValuePropertyCellEditingSupport 
 	@Override
 	protected Command createSetCommand(Object element, Object userInputValue) {
 		if (userInputValue == CHANGE_VALUE) {
-			userInputValue = new Integer(0);
+			userInputValue = Integer.valueOf(0);
 		}
 		
 		if (((int) userInputValue) < 0) {

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.EList;
@@ -25,7 +26,9 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import de.dlr.sc.virsat.model.dvlm.categories.propertydefinitions.PropertydefinitionsPackage;
 import de.dlr.sc.virsat.project.Activator;
+import de.dlr.sc.virsat.project.structure.VirSatProjectCommons;
 
 /**
  * Utility class for VirSat ResourceSets
@@ -87,7 +90,10 @@ public class VirSatResourceSetUtil {
 			// First try to store the current Resource into Memory
 			InMemoryByteArrayOutputStream inMemoryBuffer = new InMemoryByteArrayOutputStream();
 			try {
+				boolean resourceSendsNotifications = resource.eDeliver();
+				resource.eSetDeliver(false);
 				resource.save(inMemoryBuffer, saveOptions);
+				resource.eSetDeliver(resourceSendsNotifications);
 			} finally {
 				inMemoryBuffer.close();
 			}
@@ -154,16 +160,26 @@ public class VirSatResourceSetUtil {
 	public static void removeDanglingReferences(Resource resource) {
 		Map<EObject, Collection<Setting>> unresolvedProxies = EcoreUtil.UnresolvedProxyCrossReferencer.find(resource);
 		
-		for (EObject proxy : unresolvedProxies.keySet()) {
-			Collection<Setting> settings = unresolvedProxies.get(proxy);
+		for (Entry<EObject, Collection<Setting>> entry : unresolvedProxies.entrySet()) {
+			EObject proxy = entry.getKey();
+			Collection<Setting> settings = entry.getValue();
 			for (Setting setting : settings) {
 				EObject eContainer = setting.getEObject();
 				EStructuralFeature eStructuralFeature = setting.getEStructuralFeature();
-				if (eStructuralFeature.isMany()) {
-					((EList<?>) eContainer.eGet(eStructuralFeature)).remove(proxy);
-				} else {
-					eContainer.eUnset(eStructuralFeature);
-				}
+				
+				// Ignore EReference types
+				boolean isEReferenceType = eStructuralFeature.equals(PropertydefinitionsPackage.Literals.EREFERENCE_PROPERTY__REFERENCE_TYPE);
+				// Don't remove references in external resources
+				boolean isDvlmResource = resource.getURI().fileExtension().contains(VirSatProjectCommons.FILENAME_EXTENSION);
+				
+				if (!isEReferenceType && isDvlmResource) {
+					if (eStructuralFeature.isMany()) {
+						((EList<?>) eContainer.eGet(eStructuralFeature)).remove(proxy);
+					} else {
+						eContainer.eUnset(eStructuralFeature);
+					}
+				} 
+				
 			}
 		}
 	}

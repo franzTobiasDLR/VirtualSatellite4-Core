@@ -13,27 +13,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.emf.common.command.AbstractCommand;
-import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import de.dlr.sc.virsat.build.inheritance.AVirSatTransactionalBuilder;
 import de.dlr.sc.virsat.commons.datastructures.DependencyTree;
 import de.dlr.sc.virsat.model.calculation.compute.problem.EvaluationProblem;
 import de.dlr.sc.virsat.model.calculation.marker.VirSatEquationMarkerHelper;
@@ -45,18 +40,14 @@ import de.dlr.sc.virsat.model.dvlm.calculation.TypeInstanceResult;
 import de.dlr.sc.virsat.model.dvlm.categories.ATypeInstance;
 import de.dlr.sc.virsat.model.ecore.VirSatEcoreUtil;
 import de.dlr.sc.virsat.project.Activator;
-import de.dlr.sc.virsat.project.editingDomain.VirSatEditingDomainRegistry;
-import de.dlr.sc.virsat.project.editingDomain.VirSatTransactionalEditingDomain;
 import de.dlr.sc.virsat.project.resources.VirSatResourceSet;
 import de.dlr.sc.virsat.project.structure.VirSatProjectCommons;
 
 /**
- * Evaluates expressions and equations.
- * @author muel_s8
- *
+ * Builder for evaluating expressions and equations.
  */
 
-public class IncrementalEquationBuilder extends IncrementalProjectBuilder {
+public class IncrementalEquationBuilder extends AVirSatTransactionalBuilder {
 
 	public static final String BUILDER_ID = "de.dlr.sc.virsat.model.calculation.compute.builder";
 
@@ -66,167 +57,42 @@ public class IncrementalEquationBuilder extends IncrementalProjectBuilder {
 	private List<EvaluationProblem> equationProblems;
 	private List<EObject> objectsWithOldMarkers;
 	
-	VirSatEquationMarkerHelper vemHelper;
+	protected VirSatEquationMarkerHelper vemHelper;
 	
 	/**
 	 * Public constructor
 	 */
 	public IncrementalEquationBuilder() {
-		vemHelper = new VirSatEquationMarkerHelper();
+		super("Equation Builder", new VirSatEquationMarkerHelper(), true, true);
+		this.vemHelper = (VirSatEquationMarkerHelper) this.vpmHelper;
 		objectsWithOldMarkers = new ArrayList<>();
 	}
-	
+
 	@Override
-	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
-		IProject project = getVirSatProject();
-		IResourceDelta delta = getDelta(project);
-		
-		Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), Status.OK, "IncrementalEquationBuilder: Try to trigger build", null));
-		
-		if (isInterrupted() || monitor.isCanceled()) {
-			rememberLastBuiltState();
-			return null;
-		}
-		
-		// The builder is supposed to build the project in an unmanaged resourceSet
-		// but since we can have inconsistencies between the resource on the eclipse workspace and the in memory representation
-		// of EMF currently displayed by the managed ResourceSet in the navigator, it can happen that newly added elements disappear because the resources in the WS doesn't knwo references
-		// and stores them once the builder is finished. This behavior is prevented by first asking the projects managed resource set
-		// if there are unsaved changes pending. If yes, we do not allow the builder to start
-		
-		switch (kind) {
-			case FULL_BUILD:
-				transactionalFullBuild(monitor);
-				break;
-			case INCREMENTAL_BUILD:
-				transactionaIncrementalBuild(delta, monitor);
-				break;
-			case AUTO_BUILD:
-				if (delta == null) {
-					Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), Status.OK, "IncrementalEquationBuilder: Performing full build", null));
-					transactionalFullBuild(monitor);
-				} else {
-					Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), Status.OK, "IncrementalEquationBuilder: Performing incremental build", null));
-					transactionaIncrementalBuild(delta, monitor);
-				}
-				break;
-			default:
-				break;
-		}
-		
-		Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), Status.OK, "IncrementalEquationBuilder: Finished build", null));
-
-		return null;
-	}
-	
-	/**
-	 * Performs a transactional full build
-	 * @param monitor progress monitor
-	 * @throws CoreException 
-	 */
-	private void transactionalFullBuild(IProgressMonitor monitor) {
-		VirSatTransactionalEditingDomain virSatTed = VirSatEditingDomainRegistry.INSTANCE.getEd(getVirSatProject());
-		
-		if (virSatTed == null) {
-			return;
-		}
-		
-		Command cmd = new AbstractCommand() {
-			@Override
-			public void execute() {
-				fullBuild(monitor);
-				virSatTed.saveAll(true, true);
-			}
-
-			@Override
-			public void redo() {
-				
-			}
-			
-			@Override
-			public boolean canUndo() {
-				return true;
-			}
-			
-			@Override
-			public boolean canExecute() {
-				return true;
-			}
-		};
-		
-		if (virSatTed.getActiveTransaction() != null) {
-			rememberLastBuiltState();
-			return;
-		}
-		
-		virSatTed.getVirSatCommandStack().executeNoUndo(cmd);
-		
-		// Clean up old markers
-		vemHelper.deleteAllMarkersInWorkspace();
-		
+	protected void transactionalFullBuildUpdateProblemMarkers() {
 		createEquationEvaluationProblemMarkers();
 	}
 	
-	/**
-	 * Performs an incremental build
-	 * @param delta build delta
-	 * @param monitor progress monitor
-	 * @throws CoreException 
-	 */
-	private void transactionaIncrementalBuild(IResourceDelta delta, IProgressMonitor monitor) {
-		VirSatTransactionalEditingDomain virSatTed = VirSatEditingDomainRegistry.INSTANCE.getEd(getVirSatProject());
-		
-		if (virSatTed == null) {
-			return;
-		}
-		
-		Command cmd = new AbstractCommand() {
-			@Override
-			public void execute() {
-				incrementalBuild(delta, monitor);
-				virSatTed.saveAll(true, true);
-			}
-
-			@Override
-			public void redo() {
-				
-			}
-			
-			@Override
-			public boolean canUndo() {
-				return true;
-			}
-			
-			@Override
-			public boolean canExecute() {
-				return true;
-			}
-		};
-		
-		if (virSatTed.getActiveTransaction() != null) {
-			rememberLastBuiltState();
-			return;
-		}
-		
-		virSatTed.getVirSatCommandStack().executeNoUndo(cmd);
-		
+	@Override
+	protected void transactionalIncrementalBuildRemoveProblemMarkers() {
 		// Clean up old markers
 		for (EObject objectWithOldMarkers : objectsWithOldMarkers) {
 			vemHelper.deleteAllMarkers(objectWithOldMarkers);
 		}
-		
+	}
+
+	@Override
+	protected void transactionalIncrementalBuildUpdateProblemMarkers() {
 		createEquationEvaluationProblemMarkers();
 	}
 
-	/**
-	 * Performs a full build
-	 * @param monitor progress monitor
-	 * @throws CoreException 
-	 */
+	@Override
 	public void fullBuild(IProgressMonitor monitor) {
+		Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "IncrementalEquationBuilder: Starting full build"));
 		VirSatResourceSet resourceSet = getResourceSet();
 		
 		if (!resourceSet.isOpen()) {
+			Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "IncrementalEquationBuilder: Exited full build since project is closed"));
 			return;
 		}
 		
@@ -234,15 +100,12 @@ public class IncrementalEquationBuilder extends IncrementalProjectBuilder {
 		List<Equation> equations = getAllEquationsInProject(resourceSet);
 		DependencyTree<EObject> tree = dependencyHelper.createDependencyTree(equations);
 		buildEquations(tree, monitor);
+		Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "IncrementalEquationBuilder: Finished full build"));
 	}
-	
-	/**
-	 * Performs an incremental build
-	 * @param delta build delta
-	 * @param monitor progress monitor
-	 * @throws CoreException 
-	 */
+
+	@Override
 	public void incrementalBuild(IResourceDelta delta, IProgressMonitor monitor) {
+		Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "IncrementalEquationBuilder: Starting incremental build"));
 		final int MAX_TASKS = 4;
 		SubMonitor subMonitor = SubMonitor.convert(monitor, MAX_TASKS);
 		subMonitor.beginTask("Building dependency tree...", MAX_TASKS);
@@ -250,6 +113,7 @@ public class IncrementalEquationBuilder extends IncrementalProjectBuilder {
 		VirSatResourceSet resourceSet = getResourceSet();
 		
 		if (!resourceSet.isOpen()) {
+			Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "IncrementalEquationBuilder: Exited incremental build since project is closed"));
 			return;
 		}
 		
@@ -261,32 +125,33 @@ public class IncrementalEquationBuilder extends IncrementalProjectBuilder {
 				@Override
 				public boolean visit(IResourceDelta delta) throws CoreException {
 					IResource iResource = delta.getResource();
-					Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), Status.OK, "IncrementalEquationBuilder: Obtained equations from Resource (" + iResource + ")", null));
+					Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "IncrementalEquationBuilder: Obtained equations from Resource (" + iResource + ")"));
 				    	
 					int resourceDeltaKind = delta.getKind();
 					boolean isRemoved = resourceDeltaKind == IResourceDelta.REMOVED;
-			    	if ((iResource instanceof IFile) && (!isRemoved)) {
-			    		IFile iFile = (IFile) iResource;
+					if ((iResource instanceof IFile) && (!isRemoved)) {
+						IFile iFile = (IFile) iResource;
 
-			    		// Only build model files
-			    		boolean isDvlmModelFile = VirSatProjectCommons.isDvlmFile(iFile);
-			    		if (isDvlmModelFile) {
-			    			Resource resource = resourceSet.safeGetResource(iFile, false);
-			    			
-			    			// In case the resource could not be loaded continue with the next delta.
-			    			if (resource == null) {
-			    				return true;
-			    			}
-			    			
-			    			equationResults.addAll(getAllEquationResultsInResource(resource));
-			    		}
-			    	}
-					
+						// Only build model files
+						boolean isDvlmModelFile = VirSatProjectCommons.isDvlmFile(iFile);
+						if (isDvlmModelFile) {
+							Resource resource = resourceSet.safeGetResource(iFile, false);
+
+							// In case the resource could not be loaded continue with the next delta.
+							if (resource == null) {
+								return true;
+							}
+
+							equationResults.addAll(getAllEquationResultsInResource(resource));
+						}
+					}
+
 					return true;
 				}
 			});
 		} catch (CoreException e) {
-			Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), Status.OK, "IncrementalEquationBuilder: Could not obtain equations", e));
+			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.getPluginId(), Status.ERROR, "IncrementalEquationBuilder: Could not obtain equations", e));
+			return;
 		}
 		
 		// Build the dependency tree
@@ -315,6 +180,7 @@ public class IncrementalEquationBuilder extends IncrementalProjectBuilder {
 		subMonitor.worked(1);
 		
 		subMonitor.beginTask("Saving resources...", MAX_TASKS);
+		Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "IncrementalEquationBuilder: Finsihed incremental build"));
 	}
 	
 	/**
@@ -332,6 +198,7 @@ public class IncrementalEquationBuilder extends IncrementalProjectBuilder {
 			EcoreUtil.resolveAll(resourceSet);
 			
 			if (resourceSet.hasError()) {
+				reportResourceSetErrors(resourceSet);
 				return Collections.EMPTY_LIST;
 			}
 			
@@ -350,6 +217,35 @@ public class IncrementalEquationBuilder extends IncrementalProjectBuilder {
 		return equations;
 	};
 	
+	/**
+	 * Writes all errors from resourceSet to log
+	 * @param resourceSet resource set to get errors from
+	 */
+	private void reportResourceSetErrors(VirSatResourceSet resourceSet) {
+		for (Resource resource : resourceSet.getResources()) {
+			for (Resource.Diagnostic error : resource.getErrors()) {
+				Status status = getResourceErrorStatus(resource, error);
+				Activator.getDefault().getLog().log(status);
+			}
+		}
+	};
+	
+	/**
+	 * Creates a status for an error in a resource
+	 * @param resource EMF resource with an error
+	 * @param error 
+	 * @return status for writing to log
+	 */
+	private Status getResourceErrorStatus(Resource resource, Resource.Diagnostic error) {
+		Status status;
+		Throwable exception = error instanceof Throwable ? (Throwable) error : null;
+		status = new Status(Status.ERROR, Activator.getPluginId(),
+				String.format("IncrementalEquationBuilder: error in resource %s: %s", resource.toString(),
+						error.getMessage()),
+				exception);
+		return status;
+	}
+
 	/**
 	 * Call this method to get all Equations from a given EMF Resource
 	 * @param resource The EMF Resource to look in for equations
@@ -412,27 +308,5 @@ public class IncrementalEquationBuilder extends IncrementalProjectBuilder {
 		for (EvaluationProblem equationProblem : equationProblems) {			
 			vemHelper.createEvaluationProblemMarker(equationProblem);
 		}
-	}
-	
-	/**
-	 * Facade method to be able to override getProject method
-	 * for the test cases of this tester
-	 * @return hands back the current project the builder is triggered on
-	 */
-	protected IProject getVirSatProject() {
-		return getProject();
-	}
-	
-	/**
-	 * Overrideable method to provide the resource set for the use of non transactional testers
-	 * @return gets the resource set this builder operates on
-	 */
-	protected VirSatResourceSet getResourceSet() {
-		return VirSatResourceSet.getResourceSet(getVirSatProject());
-	}
-	
-	@Override
-	public ISchedulingRule getRule(int kind, Map<String, String> args) {
-		return null;
 	}
 }

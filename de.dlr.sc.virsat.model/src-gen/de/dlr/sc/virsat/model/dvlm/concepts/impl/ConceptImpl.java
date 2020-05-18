@@ -15,7 +15,9 @@ import de.dlr.sc.virsat.model.dvlm.categories.Category;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
 import de.dlr.sc.virsat.model.dvlm.concepts.ConceptImport;
 import de.dlr.sc.virsat.model.dvlm.concepts.ConceptsPackage;
+import de.dlr.sc.virsat.model.dvlm.concepts.EcoreImport;
 import de.dlr.sc.virsat.model.dvlm.concepts.IActiveConcept;
+import de.dlr.sc.virsat.model.dvlm.concepts.IEImports;
 import de.dlr.sc.virsat.model.dvlm.concepts.IImports;
 
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
@@ -59,12 +61,14 @@ import org.eclipse.emf.ecore.util.InternalEList;
  *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#getDescription <em>Description</em>}</li>
  *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#isActive <em>Active</em>}</li>
  *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#getImports <em>Imports</em>}</li>
+ *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#getEcoreImports <em>Ecore Imports</em>}</li>
  *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#getCategories <em>Categories</em>}</li>
  *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#getStructuralElements <em>Structural Elements</em>}</li>
  *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#getRelations <em>Relations</em>}</li>
  *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#getVersion <em>Version</em>}</li>
  *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#isDMF <em>DMF</em>}</li>
  *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#getDisplayName <em>Display Name</em>}</li>
+ *   <li>{@link de.dlr.sc.virsat.model.dvlm.concepts.impl.ConceptImpl#isBeta <em>Beta</em>}</li>
  * </ul>
  *
  * @generated
@@ -171,6 +175,16 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 	protected EList<ConceptImport> imports;
 
 	/**
+	 * The cached value of the '{@link #getEcoreImports() <em>Ecore Imports</em>}' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getEcoreImports()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList<EcoreImport> ecoreImports;
+
+	/**
 	 * The cached value of the '{@link #getCategories() <em>Categories</em>}' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -259,6 +273,26 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 	 * @ordered
 	 */
 	protected String displayName = DISPLAY_NAME_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #isBeta() <em>Beta</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isBeta()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final boolean BETA_EDEFAULT = false;
+
+	/**
+	 * The cached value of the '{@link #isBeta() <em>Beta</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isBeta()
+	 * @generated
+	 * @ordered
+	 */
+	protected boolean beta = BETA_EDEFAULT;
 
 	/**
 	 * *********************************
@@ -414,6 +448,20 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EList<EcoreImport> getEcoreImports() {
+		if (ecoreImports == null) {
+			ecoreImports = new EObjectContainmentEList.Resolving<EcoreImport>(EcoreImport.class, this, ConceptsPackage.CONCEPT__ECORE_IMPORTS);
+		 
+		
+		}
+		return ecoreImports;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EList<Category> getCategories() {
 		if (categories == null) {
 			categories = new EObjectContainmentEList.Resolving<Category>(Category.class, this, ConceptsPackage.CONCEPT__CATEGORIES);
@@ -519,6 +567,27 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public boolean isBeta() {
+		return beta;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setBeta(boolean newBeta) {
+		boolean oldBeta = beta;
+		beta = newBeta;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ConceptsPackage.CONCEPT__BETA, oldBeta, beta));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EList<Category> getNonAbstractCategories() {
 		EList<Category> allCategories = new org.eclipse.emf.common.util.BasicEList<>();
 		
@@ -541,6 +610,8 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 		switch (featureID) {
 			case ConceptsPackage.CONCEPT__IMPORTS:
 				return ((InternalEList<?>)getImports()).basicRemove(otherEnd, msgs);
+			case ConceptsPackage.CONCEPT__ECORE_IMPORTS:
+				return ((InternalEList<?>)getEcoreImports()).basicRemove(otherEnd, msgs);
 			case ConceptsPackage.CONCEPT__CATEGORIES:
 				return ((InternalEList<?>)getCategories()).basicRemove(otherEnd, msgs);
 			case ConceptsPackage.CONCEPT__STRUCTURAL_ELEMENTS:
@@ -571,6 +642,8 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 				return isActive();
 			case ConceptsPackage.CONCEPT__IMPORTS:
 				return getImports();
+			case ConceptsPackage.CONCEPT__ECORE_IMPORTS:
+				return getEcoreImports();
 			case ConceptsPackage.CONCEPT__CATEGORIES:
 				return getCategories();
 			case ConceptsPackage.CONCEPT__STRUCTURAL_ELEMENTS:
@@ -583,6 +656,8 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 				return isDMF();
 			case ConceptsPackage.CONCEPT__DISPLAY_NAME:
 				return getDisplayName();
+			case ConceptsPackage.CONCEPT__BETA:
+				return isBeta();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -612,6 +687,10 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 				getImports().clear();
 				getImports().addAll((Collection<? extends ConceptImport>)newValue);
 				return;
+			case ConceptsPackage.CONCEPT__ECORE_IMPORTS:
+				getEcoreImports().clear();
+				getEcoreImports().addAll((Collection<? extends EcoreImport>)newValue);
+				return;
 			case ConceptsPackage.CONCEPT__CATEGORIES:
 				getCategories().clear();
 				getCategories().addAll((Collection<? extends Category>)newValue);
@@ -632,6 +711,9 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 				return;
 			case ConceptsPackage.CONCEPT__DISPLAY_NAME:
 				setDisplayName((String)newValue);
+				return;
+			case ConceptsPackage.CONCEPT__BETA:
+				setBeta((Boolean)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -660,6 +742,9 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 			case ConceptsPackage.CONCEPT__IMPORTS:
 				getImports().clear();
 				return;
+			case ConceptsPackage.CONCEPT__ECORE_IMPORTS:
+				getEcoreImports().clear();
+				return;
 			case ConceptsPackage.CONCEPT__CATEGORIES:
 				getCategories().clear();
 				return;
@@ -677,6 +762,9 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 				return;
 			case ConceptsPackage.CONCEPT__DISPLAY_NAME:
 				setDisplayName(DISPLAY_NAME_EDEFAULT);
+				return;
+			case ConceptsPackage.CONCEPT__BETA:
+				setBeta(BETA_EDEFAULT);
 				return;
 		}
 		super.eUnset(featureID);
@@ -702,6 +790,8 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 				return active != ACTIVE_EDEFAULT;
 			case ConceptsPackage.CONCEPT__IMPORTS:
 				return imports != null && !imports.isEmpty();
+			case ConceptsPackage.CONCEPT__ECORE_IMPORTS:
+				return ecoreImports != null && !ecoreImports.isEmpty();
 			case ConceptsPackage.CONCEPT__CATEGORIES:
 				return categories != null && !categories.isEmpty();
 			case ConceptsPackage.CONCEPT__STRUCTURAL_ELEMENTS:
@@ -714,6 +804,8 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 				return dmf != DMF_EDEFAULT;
 			case ConceptsPackage.CONCEPT__DISPLAY_NAME:
 				return DISPLAY_NAME_EDEFAULT == null ? displayName != null : !DISPLAY_NAME_EDEFAULT.equals(displayName);
+			case ConceptsPackage.CONCEPT__BETA:
+				return beta != BETA_EDEFAULT;
 		}
 		return super.eIsSet(featureID);
 	}
@@ -743,6 +835,12 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 				default: return -1;
 			}
 		}
+		if (baseClass == IEImports.class) {
+			switch (derivedFeatureID) {
+				case ConceptsPackage.CONCEPT__ECORE_IMPORTS: return ConceptsPackage.IE_IMPORTS__ECORE_IMPORTS;
+				default: return -1;
+			}
+		}
 		return super.eBaseStructuralFeatureID(derivedFeatureID, baseClass);
 	}
 
@@ -768,6 +866,12 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 		if (baseClass == IImports.class) {
 			switch (baseFeatureID) {
 				case ConceptsPackage.IIMPORTS__IMPORTS: return ConceptsPackage.CONCEPT__IMPORTS;
+				default: return -1;
+			}
+		}
+		if (baseClass == IEImports.class) {
+			switch (baseFeatureID) {
+				case ConceptsPackage.IE_IMPORTS__ECORE_IMPORTS: return ConceptsPackage.CONCEPT__ECORE_IMPORTS;
 				default: return -1;
 			}
 		}
@@ -812,6 +916,8 @@ public class ConceptImpl extends MinimalEObjectImpl.Container implements Concept
 		result.append(dmf);
 		result.append(", displayName: ");
 		result.append(displayName);
+		result.append(", beta: ");
+		result.append(beta);
 		result.append(')');
 		return result.toString();
 	}

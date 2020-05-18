@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: VirSat Core UI Tests with SwtBot
-Bundle-SymbolicName: de.dlr.sc.virsat.swtbot.test
-Bundle-Version: 4.9.1.qualifier
+Bundle-SymbolicName: de.dlr.sc.virsat.swtbot.test;singleton:=true
+Bundle-Version: 4.11.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: DLR (German Aerospace Center)
 Require-Bundle: org.eclipse.swt,
@@ -11,6 +11,7 @@ Require-Bundle: org.eclipse.swt,
  org.eclipse.swtbot.go,
  org.eclipse.swtbot.junit4_x,
  org.eclipse.swtbot.swt.finder,
+ org.eclipse.swtbot.eclipse.gef.finder,
  org.eclipse.jdt.junit.runtime,
  de.dlr.sc.virsat.apps,
  de.dlr.sc.virsat.apps.ui,
@@ -23,7 +24,6 @@ Require-Bundle: org.eclipse.swt,
  de.dlr.sc.virsat.external.lib.commons.math,
  de.dlr.sc.virsat.external.lib.jfreechart,
  de.dlr.sc.virsat.external.lib.protobuf,
- de.dlr.sc.virsat.javadoc.api,
  de.dlr.sc.virsat.model,
  de.dlr.sc.virsat.model.calculation,
  de.dlr.sc.virsat.model.calculation.ui,
@@ -38,15 +38,33 @@ Require-Bundle: org.eclipse.swt,
  de.dlr.sc.virsat.project,
  de.dlr.sc.virsat.project.ui,
  de.dlr.sc.virsat.qudv.ui,
- de.dlr.sc.virsat.svn,
- de.dlr.sc.virsat.svn.ui,
+ de.dlr.sc.virsat.team,
+ de.dlr.sc.virsat.team.ui,
  de.dlr.sc.virsat.test,
  de.dlr.sc.virsat.uiengine.ui,
  de.dlr.sc.virsat.concept.unittest.util,
  de.dlr.sc.virsat.model.extension.budget.mass,
- de.dlr.sc.virsat.model.extension.budget.mass.ui
-Import-Package: org.zeromq,
+ de.dlr.sc.virsat.model.extension.budget.mass.ui,
+ org.hamcrest.library,
+ de.dlr.sc.virsat.model.extension.budget.power,
+ de.dlr.sc.virsat.model.extension.budget.power.ui,
+ de.dlr.sc.virsat.model.extension.funcelectrical,
+ de.dlr.sc.virsat.model.extension.funcelectrical.ui,
+ de.dlr.sc.virsat.model.extension.maturity,
+ de.dlr.sc.virsat.model.extension.maturity.ui,
+ de.dlr.sc.virsat.model.extension.mechanical,
+ de.dlr.sc.virsat.model.extension.mechanical.ui,
+ de.dlr.sc.virsat.model.extension.requirements,
+ de.dlr.sc.virsat.model.extension.requirements.ui,
+ de.dlr.sc.virsat.model.extension.statemachines,
+ org.eclipse.gef
+Import-Package: org.eclipse.draw2d.geometry,
+ org.zeromq,
  vtk,
  vtk.rendering,
  vtk.rendering.awt
 Automatic-Module-Name: de.dlr.sc.virsat.swtbot.test
+Export-Package: de.dlr.sc.virsat.swtbot.test,
+ de.dlr.sc.virsat.swtbot.util
+Bundle-Activator: de.dlr.sc.virsat.swtbot.test.Activator
+Bundle-ActivationPolicy: lazy

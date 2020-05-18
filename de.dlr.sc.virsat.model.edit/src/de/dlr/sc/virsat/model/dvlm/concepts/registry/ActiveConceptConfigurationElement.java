@@ -25,8 +25,8 @@ import de.dlr.sc.virsat.model.concept.migrator.AMigrator;
 import de.dlr.sc.virsat.model.dvlm.DVLMPackage;
 import de.dlr.sc.virsat.model.dvlm.Repository;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
-import de.dlr.sc.virsat.model.dvlm.concepts.IConceptTypeDefinition;
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
+import de.dlr.sc.virsat.model.concept.util.ConceptActivationHelper;
 import de.dlr.sc.virsat.model.ecore.xmi.impl.DvlmXMIResourceFactoryImpl;
 
 /**
@@ -71,7 +71,7 @@ public class ActiveConceptConfigurationElement {
 	}
 
 	/**
-	 * this method get the xmi of the configuration element
+	 * This method get the xmi of the configuration element
 	 * @return xmi of the configuration element
 	 */
 	public String getXmi() {
@@ -80,7 +80,17 @@ public class ActiveConceptConfigurationElement {
 	}
 
 	/**
-	 *This method tells if the ACCE registers a given Concept. This method can be used
+	 * This method get the displayName of the concept
+	 * @return displayName of the concept
+	 */
+	public String getConceptNameWithVersion() {
+		Concept concept = loadConceptFromPlugin();
+		String conceptNameWithVersion = ActiveConceptHelper.getConceptNameWithVersion(concept);
+		return conceptNameWithVersion;
+	}
+	
+	/**
+	 * This method tells if the ACCE registers a given Concept. This method can be used
 	 * to test if a given concept is handled by the given configuration element from the
 	 * eclipse / equinox platform. 
 	 * @param concept The concept to be checked
@@ -101,24 +111,23 @@ public class ActiveConceptConfigurationElement {
 	}
 	
 	/**
-	 * this method load the concept from the Plugin
+	 * This method load the concept from the Plugin
 	 * @return the loaded concept
 	 */
 	public Concept loadConceptFromPlugin() {
 		Resource.Factory.Registry factoryRegistry = Resource.Factory.Registry.INSTANCE;
-	    Map<String, Object> extensionMap = factoryRegistry.getExtensionToFactoryMap();
-	    extensionMap.put("xmi", new DvlmXMIResourceFactoryImpl());
+		Map<String, Object> extensionMap = factoryRegistry.getExtensionToFactoryMap();
+		extensionMap.put("xmi", new DvlmXMIResourceFactoryImpl());
 
-	    String conceptXmiPluginPath = getConceptXmiPluginPath();
-	    URI conceptResourceUri = URI.createPlatformPluginURI(conceptXmiPluginPath, true);
-	    
-	    ResourceSet resourceSet = AMigrator.performMigration(conceptResourceUri);
-	    
+		String conceptXmiPluginPath = getConceptXmiPluginPath();
+		URI conceptResourceUri = URI.createPlatformPluginURI(conceptXmiPluginPath, true);
+		
+		ResourceSet resourceSet = AMigrator.performMigration(conceptResourceUri);
+		
 		Resource resource = resourceSet.getResource(conceptResourceUri, true);
 		Concept concept = (Concept) resource.getContents().get(0);
 		return concept;
 	}
-
 
 	/**
 	 * This method copies the concept and makes sure that IDs referencing other concepts are
@@ -128,35 +137,21 @@ public class ActiveConceptConfigurationElement {
 	 * @return the active Concept that has been created
 	 */
 	private static Concept createActiveConcept(Concept concept, Repository repository) {
+		ConceptActivationHelper helper = new ConceptActivationHelper(repository);
 		EcoreUtil.Copier copier = new EcoreUtil.Copier() {
 
 			private static final long serialVersionUID = 5925167870311468118L;
 			
 			@Override
 			public EObject get(Object key) {
+				
 				EObject eObject = super.get(key);
-
-				// In case we try to create a reference to an object which was not copied
-				// we should try to redirect that reference to an already active and existing concept
-				if ((eObject == null) && (key instanceof IConceptTypeDefinition)) {
-					IConceptTypeDefinition typeDefinition = (IConceptTypeDefinition) key;
-			
-					// Get the fragment URI of the concept we want to reference to
-					Resource resource = typeDefinition.eResource();
-					String uriFragment = resource.getURIFragment(typeDefinition); 
-
-					// ask the repository if there is such an object with the given URI fragment
-					Resource repoResource = repository.eResource();
-					EObject repoTypeDefinition = repoResource.getEObject(uriFragment);
-
-					// If not throw a warning that there is something missing
-					if (repoTypeDefinition == null) {
-						String fqId = ActiveConceptHelper.getFullQualifiedId(typeDefinition);
-					
-						throw new RuntimeException("Install missing concept first! Missing concept: " + fqId);
-					}
-					return repoTypeDefinition;
-				} 
+				
+				// Activate types 
+				if (eObject == null && key instanceof EObject) {
+					return helper.getActiveType((EObject) key);
+				}
+				
 				return eObject;
 			}
 		};
@@ -193,7 +188,7 @@ public class ActiveConceptConfigurationElement {
 	}
 	
 	/**
-	 * this method add the active concept
+	 * This method add the active concept
 	 * @param ed editing domain
 	 * @param repository where the copy will be saved
 	 * @return the adding command

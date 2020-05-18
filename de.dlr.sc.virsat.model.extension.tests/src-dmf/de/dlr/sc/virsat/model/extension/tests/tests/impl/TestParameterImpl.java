@@ -1,15 +1,16 @@
-/*******************************************************************************
+/**
  * Copyright (c) 2008-2019 German Aerospace Center (DLR), Simulation and Software Technology, Germany.
- *
+ * 
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
  * http://www.eclipse.org/legal/epl-2.0.
- *
+ * 
  * SPDX-License-Identifier: EPL-2.0
- *******************************************************************************/
+ */
 package de.dlr.sc.virsat.model.extension.tests.tests.impl;
 
-import de.dlr.sc.virsat.model.dvlm.dmf.impl.DObjectImpl;
+import de.dlr.sc.virsat.model.ext.core.core.impl.GenericCategoryImpl;
+
 import de.dlr.sc.virsat.model.extension.tests.tests.TestParameter;
 import de.dlr.sc.virsat.model.extension.tests.tests.TestsPackage;
 
@@ -32,7 +33,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class TestParameterImpl extends DObjectImpl implements TestParameter {
+public class TestParameterImpl extends GenericCategoryImpl implements TestParameter {
 	/**
 	 * The default value of the '{@link #getDefaultValue() <em>Default Value</em>}' attribute.
 	 * <!-- begin-user-doc -->
@@ -77,6 +78,7 @@ public class TestParameterImpl extends DObjectImpl implements TestParameter {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public double getDefaultValue() {
 		return defaultValue;
 	}
@@ -86,6 +88,7 @@ public class TestParameterImpl extends DObjectImpl implements TestParameter {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setDefaultValue(double newDefaultValue) {
 		double oldDefaultValue = defaultValue;
 		defaultValue = newDefaultValue;
@@ -160,7 +163,7 @@ public class TestParameterImpl extends DObjectImpl implements TestParameter {
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (defaultValue: ");
 		result.append(defaultValue);
 		result.append(')');

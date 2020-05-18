@@ -102,7 +102,6 @@ import de.dlr.sc.virsat.model.dvlm.structural.provider.DVLMStructuralItemProvide
 import de.dlr.sc.virsat.model.dvlm.util.DVLMUnresolvedReferenceException;
 import de.dlr.sc.virsat.model.ui.editor.input.VirSatUriEditorInput;
 import de.dlr.sc.virsat.project.editingDomain.VirSatEditingDomainRegistry;
-import de.dlr.sc.virsat.project.editingDomain.VirSatSaveJob;
 import de.dlr.sc.virsat.project.editingDomain.VirSatTransactionalEditingDomain;
 import de.dlr.sc.virsat.project.editingDomain.VirSatTransactionalEditingDomain.IResourceEventListener;
 import de.dlr.sc.virsat.project.markers.VirSatProblemMarkerHelper;
@@ -116,6 +115,7 @@ import de.dlr.sc.virsat.uiengine.ui.databinding.VirSatDataBindingContext;
 import de.dlr.sc.virsat.uiengine.ui.editor.registry.GenericEditorRegistry;
 import de.dlr.sc.virsat.uiengine.ui.editor.snippets.AUiSectionSnippet;
 import de.dlr.sc.virsat.uiengine.ui.editor.snippets.IUiSnippet;
+import de.dlr.sc.virsat.uiengine.ui.swt.forms.VirSatFormToolKit;
 
 /**
  * Implements our generic editor which is building the UI
@@ -143,7 +143,6 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 	// Members considering the Outline View
 	protected ComposedAdapterFactory contentOutlineAdapterFactory;
 	protected IContentOutlinePage contentOutlinePage;
-	protected IStatusLineManager contentOutlineStatusLineManager;
 	protected TreeViewer contentOutlineViewer;
 
 	protected List<PropertySheetPage> propertySheetPages = new ArrayList<PropertySheetPage>();
@@ -211,6 +210,12 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 						// If the resource that this editor was responsible for has been removed from the resource set
 						// we automatically close the editor. On the other hand, if the resource still exists but the model object
 						// is no longer contained anywhere (e.g. if a category assignment has been deleted) then we can also close the editor.
+						
+						DVLMEditorPlugin.getPlugin().getLog().log(new Status(
+							Status.INFO,
+							DVLMEditorPlugin.getPlugin().getSymbolicName(),
+							"GenericEditor: Received a Change Event with emty resource for (" + GenericEditor.this.getTitle() + ")"
+						));
 						handleClosedEditorResource();
 						return;
 					}
@@ -301,6 +306,12 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 	 * Handles what to do with unloaded resources on activation
 	 */
 	protected void handleClosedEditorResource() {
+		DVLMEditorPlugin.getPlugin().getLog().log(new Status(
+			Status.INFO,
+			DVLMEditorPlugin.getPlugin().getSymbolicName(),
+			"GenericEditor: Closing Editor for (" + GenericEditor.this.getTitle() + ")"
+		));
+
 		handleClosedResourceTriggered = true;
 		getSite().getPage().closeEditor(this, false);
 	}
@@ -575,7 +586,7 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 		}
 
 		Diagnostic diagnostic = editingDomain.getResourceSet().getResourceToDiagnosticsMap().get(resource);
-		boolean hasErrors = diagnostic != null && diagnostic.getSeverity() == Diagnostic.ERROR;
+		boolean hasErrors = diagnostic != null && diagnostic.getSeverity() != Diagnostic.OK;
 		if (!hasErrors) {
 			getSite().getShell().getDisplay().asyncExec(new Runnable() { 
 				public void run() {
@@ -623,6 +634,12 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 	
 	@Override
 	public void createPages() {
+		DVLMEditorPlugin.getPlugin().getLog().log(new Status(
+			Status.INFO,
+			DVLMEditorPlugin.getPlugin().getSymbolicName(),
+			"GenericEditor: Started creating editor pages for (" + GenericEditor.this.getTitle() + ")"
+		));
+
 		formCollapseAllAction = new CollapseAllAction();
 		formCollapseAllAction.setText("Collapse All");
 		formCollapseAllAction.setToolTipText("Press Button to collapse all Sections of the current Editor.");
@@ -708,6 +725,12 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 		});
 		
 		super.createPages();
+		
+		DVLMEditorPlugin.getPlugin().getLog().log(new Status(
+			Status.INFO,
+			DVLMEditorPlugin.getPlugin().getSymbolicName(),
+			"GenericEditor: Finalized creating editor pages for (" + GenericEditor.this.getTitle() + ")"
+		));
 	}
 
 	
@@ -789,7 +812,6 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 				@Override
 				public void makeContributions(IMenuManager menuManager, IToolBarManager toolBarManager, IStatusLineManager statusLineManager) {
 					super.makeContributions(menuManager, toolBarManager, statusLineManager);
-					contentOutlineStatusLineManager = statusLineManager;
 				}
 
 				@Override
@@ -832,7 +854,7 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 	@Override
 	public boolean isDirty() {
 		updateHasProblematicModelObject();
-		boolean hasWriteAccess = RightsHelper.hasWritePermission(editorModelObject);
+		boolean hasWriteAccess = RightsHelper.hasSystemUserWritePermission(editorModelObject);
 		boolean allowRemoveDanglingReferences = allowRemoveDanglingReferences();
 		boolean isDirty = (!hasProblematicModelObject) && editingDomain.isDirty(editorModelObject.eResource());
 		return hasWriteAccess && (isDirty || allowRemoveDanglingReferences);
@@ -858,14 +880,13 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 	
 	@Override
 	public void doSave(IProgressMonitor progressMonitor) {
-		boolean hasWriteAccess = RightsHelper.hasWritePermission(editorModelObject);
+		boolean hasWriteAccess = RightsHelper.hasSystemUserWritePermission(editorModelObject);
 		
 		if (!hasProblematicModelObject && hasWriteAccess) {
 			updateProblemIndication = false;
 			
-			VirSatSaveJob saveJob = new VirSatSaveJob(editingDomain);
-			saveJob.scheduleIfNoSaveJobPending();
-		
+			editingDomain.saveAll();
+			
 			updateProblemIndication = true;
 			updateProblemIndication();
 			
@@ -889,6 +910,11 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 
 	@Override
 	public void init(IEditorSite site, IEditorInput editorInput) {
+		DVLMEditorPlugin.getPlugin().getLog().log(new Status(
+			Status.INFO,
+			DVLMEditorPlugin.getPlugin().getSymbolicName(),
+			"GenericEditor: Started Initializing Editor for (" + GenericEditor.this.getTitle() + ")"
+		));
 		isDisposed = false;
 		setSite(site);
 		setInputWithNotify(editorInput);
@@ -904,6 +930,11 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 		VirSatTransactionalEditingDomain.addResourceEventListener(eventListener);
 		editingDomain.getResourceSet().addDiagnosticListener(diagnosticListener);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(updateProblemResourceMarkerChangeListener, IResourceChangeEvent.POST_BUILD);
+		DVLMEditorPlugin.getPlugin().getLog().log(new Status(
+			Status.INFO,
+			DVLMEditorPlugin.getPlugin().getSymbolicName(),
+			"GenericEditor: Finalized Initializing Editor for (" + GenericEditor.this.getTitle() + ")"
+		));
 	}
 	
 	/**
@@ -1190,5 +1221,10 @@ public class GenericEditor extends FormEditor implements IEditingDomainProvider,
 	 */
 	public EObject getEditorModelObject() {
 		return editorModelObject;
+	}
+	
+	@Override
+	protected FormToolkit createToolkit(Display display) {
+		return new VirSatFormToolKit(display);
 	}
 }

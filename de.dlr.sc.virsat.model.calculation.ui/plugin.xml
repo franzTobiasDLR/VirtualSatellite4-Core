@@ -513,7 +513,7 @@
 	<extension point="org.eclipse.ui.views">
 			<category 
 				id="de.dlr.sc.virsat.project.ui.view.VirSat"
-				name="VirSat">	
+				name="Virtual Satellite">	
 			</category>
 			<view id="de.dlr.sc.virsat.model.calculation.ui.views.domainRoundView"
 		    	name="Domain Round"
@@ -543,11 +543,6 @@
                </instanceof>
             </or>
          </triggerPoints>
-         <dropAssistant
-               class="de.dlr.sc.virsat.project.ui.navigator.dropAssist.DVLMObjectDropAdapterAssistant"
-               id="de.dlr.sc.virsat.project.ui.navigator.dropAssistant">
-            <possibleDropTargets></possibleDropTargets>
-         </dropAssistant>
       </navigatorContent>
    </extension>
   <extension

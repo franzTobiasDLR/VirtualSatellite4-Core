@@ -10,9 +10,10 @@
 package de.dlr.sc.virsat.project.structure;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -29,7 +30,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import de.dlr.sc.virsat.project.Activator;
-import de.dlr.sc.virsat.project.editingDomain.VirSatSaveJob;
+import de.dlr.sc.virsat.project.editingDomain.VirSatEditingDomainRegistry;
 import de.dlr.sc.virsat.project.editingDomain.VirSatTransactionalEditingDomain;
 
 /**
@@ -41,17 +42,17 @@ import de.dlr.sc.virsat.project.editingDomain.VirSatTransactionalEditingDomain;
 public abstract class VirSatProjectResourceChangeListener implements IResourceChangeListener {
 
 	private IProject virSatProject;
-	private VirSatTransactionalEditingDomain ed;
 	private boolean closedOrDeletedProject;
+	private int counter;
 	
 	/**
 	 * Constructor for the listener
 	 * @param ed The editingDomain that will be used for executing the handlers
 	 * @param virSatProject The virsatproject resource this listener should listen to
 	 */
-	public VirSatProjectResourceChangeListener(VirSatTransactionalEditingDomain ed, IProject virSatProject) {
+	public VirSatProjectResourceChangeListener(IProject virSatProject) {
 		this.virSatProject = virSatProject;
-		this.ed = ed;
+		this.counter = 0;
 	}
 	
 	@Override
@@ -59,20 +60,16 @@ public abstract class VirSatProjectResourceChangeListener implements IResourceCh
 		if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
 			return;
 		}
-
-		// Our own changes (e.g. the builders) are not external changes but managed by us,
-		// so we dont need to fire any synchronization jobs
-		Job currentJob = Job.getJobManager().currentJob();
-		if (currentJob == null || currentJob.getName().equals("Building workspace")) {
-			return;
-		}
 		
-        IResourceDelta rootDelta = event.getDelta();
-        IPath path = virSatProject.getFullPath();
-        IResourceDelta projectDelta = rootDelta.findMember(path);
-        
+		Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "VirSatProjectResourceChangeListener: Detected a Post Change event on the workspace"));
+		
+		IResourceDelta rootDelta = event.getDelta();
+		IPath path = virSatProject.getFullPath();
+		IResourceDelta projectDelta = rootDelta.findMember(path);
+
 		// Only obey changes of the project
 		if (projectDelta != null) {
+			Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "VirSatProjectResourceChangeListener: Detected deltas in the project: " + virSatProject.getName()));
 			
 			final List<IResource> addedDvlmResources = new ArrayList<>();
 			final List<IResource> changedDvlmResources = new ArrayList<>();
@@ -87,8 +84,12 @@ public abstract class VirSatProjectResourceChangeListener implements IResourceCh
 						closedOrDeletedProject = true;
 					}
 					IResource resource = delta.getResource();
-					// In case it is a change on a DVLM file, than remember it
-					if ((resource instanceof IFile) && VirSatProjectCommons.isDvlmFile((IFile) resource)) {
+					
+					// In case it is a change on a file within our resource set, then remember it
+					VirSatTransactionalEditingDomain ed = VirSatEditingDomainRegistry.INSTANCE.getEd(virSatProject);
+					boolean isInResourceSet = ed != null && ed.getResourceSet().getResource(resource, false) != null;
+					
+					if (isInResourceSet) {
 						int kind = delta.getKind();
 						if (kind == IResourceDelta.REMOVED) {
 							removedDvlmResources.add(resource);
@@ -113,6 +114,7 @@ public abstract class VirSatProjectResourceChangeListener implements IResourceCh
 
 			// Make the synchronizer stop if the project is closed
 			if (closedOrDeletedProject) {
+				Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "VirSatProjectResourceChangeListener: The project (" + virSatProject.getName() + ") seems to be closed."));
 				return;
 			}
 			
@@ -120,9 +122,44 @@ public abstract class VirSatProjectResourceChangeListener implements IResourceCh
 			// workspace job as we will need the editing domain to handle resource changes.
 			// This way the current job calling us can safely finish and the new job
 			// will handle the actual changes.
-			Job job = new WorkspaceSynchronizerJob(addedDvlmResources, removedDvlmResources, changedDvlmResources);
+			Job job = new WorkspaceSynchronizerJob(addedDvlmResources, removedDvlmResources, changedDvlmResources, counter++);
+			String changeList = printLists(addedDvlmResources, removedDvlmResources, changedDvlmResources);
+			Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "VirSatProjectResourceChangeListener: Scheduling " + job.getName() + ". \n" + changeList));
 			job.schedule();
-        }
+		}
+	}
+	
+	/**
+	 * Print a list of resources which have been detected for changes.
+	 * @param addedDvlmResources The list of added resources
+	 * @param removedDvlmResources list of removed resources
+	 * @param changedDvlmResources list of chanegd resources
+	 * @return a pretty printed string for debugging giving reasonable information about resource changes and status.
+	 */
+	private String printLists(List<IResource> addedDvlmResources, List<IResource> removedDvlmResources, List<IResource> changedDvlmResources) {
+		Set<IResource> allResources = new HashSet<>();
+		allResources.addAll(addedDvlmResources);
+		allResources.addAll(removedDvlmResources);
+		allResources.addAll(changedDvlmResources);
+		
+		StringBuilder printList = new StringBuilder();
+		printList.append("Detected by the Change Listener\n");
+		printList.append("-------------------------------\n");
+		
+		for (IResource resource: allResources) {
+			boolean isRemoved = removedDvlmResources.contains(resource);
+			boolean isChanged = changedDvlmResources.contains(resource);
+			boolean isAdded = addedDvlmResources.contains(resource);
+			
+			printList.append("Change (");
+			printList.append(isAdded ? "A" : "-");
+			printList.append(isChanged ? "C" : "-");
+			printList.append(isRemoved ? "R" : "-");
+			printList.append(") on Resource: " + resource.getLocationURI().toString()); 
+			printList.append("\n");
+		}
+		
+		return printList.toString();
 	}
 	
 	/**
@@ -134,15 +171,16 @@ public abstract class VirSatProjectResourceChangeListener implements IResourceCh
 		private List<IResource> addedDvlmResources;
 		private List<IResource> removedDvlmResources;
 		private List<IResource> changedDvlmResources;
-
+		
 		/**
 		 * Default constructor
 		 * @param addedDvlmResources the added dvlm resources
 		 * @param removedDvlmResources the removed dvlm resources
 		 * @param changedDvlmResources the changed dvlm resources
+		 * @param counter 
 		 */
-		WorkspaceSynchronizerJob(List<IResource> addedDvlmResources, List<IResource> removedDvlmResources, List<IResource> changedDvlmResources) {
-			super("Workspace Synchronizer");
+		WorkspaceSynchronizerJob(List<IResource> addedDvlmResources, List<IResource> removedDvlmResources, List<IResource> changedDvlmResources, int counter) {
+			super("Workspace Synchronizer (" + counter + ")");
 			this.addedDvlmResources = addedDvlmResources;
 			this.removedDvlmResources = removedDvlmResources;
 			this.changedDvlmResources = changedDvlmResources;
@@ -151,12 +189,8 @@ public abstract class VirSatProjectResourceChangeListener implements IResourceCh
 		
 		@Override
 		public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-			// Make it so the synchronization job is extecuted after the save job
-			if (Job.getJobManager().find(VirSatSaveJob.SAVE_JOB_NAME).length == 0 && ed.getActiveTransaction() == null) {
-				handleChanges(addedDvlmResources, removedDvlmResources, changedDvlmResources);
-			} else {
-				schedule();
-			}
+			Activator.getDefault().getLog().log(new Status(Status.INFO, Activator.getPluginId(), "VirSatProjectResourceChangeListener: Synchronization " + this.getName() + " is executed now."));
+			handleChanges(addedDvlmResources, removedDvlmResources, changedDvlmResources);
 			return Status.OK_STATUS;
 		}
 	}
