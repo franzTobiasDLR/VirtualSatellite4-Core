@@ -536,17 +536,17 @@ class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
 
 				«declareSafeAccessAttributeMethod(property, UnitValuePropertyInstance)»
 				
-				public Command «propertyMethodSet(property)»(EditingDomain ed, double value) {
+				public Command «propertyMethodSet(property)»(EditingDomain ed, Double value) {
 					«propertyMethodSafeAccess(property)»;
 					return this.«property.name».setValue(ed, value);
 				}
 
-				public void «propertyMethodSet(property)»(double value) {
+				public void «propertyMethodSet(property)»(Double value) {
 					«propertyMethodSafeAccess(property)»;
 					this.«property.name».setValue(value);
 				}
 
-				public double «propertyMethodGet(property)»() {
+				public Double «propertyMethodGet(property)»() {
 					«propertyMethodSafeAccess(property)»;
 					return «property.name».getValue();
 				}
@@ -573,17 +573,17 @@ class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
 
 				«declareSafeAccessAttributeMethod(property, UnitValuePropertyInstance)»
 
-				public Command «propertyMethodSet(property)»(EditingDomain ed, long value) {
+				public Command «propertyMethodSet(property)»(EditingDomain ed, Long value) {
 					«propertyMethodSafeAccess(property)»;
 					return this.«property.name».setValue(ed, value);
 				}
 
-				public void «propertyMethodSet(property)»(long value) {
+				public void «propertyMethodSet(property)»(Long value) {
 					«propertyMethodSafeAccess(property)»;
 					this.«property.name».setValue(value);
 				}
 
-				public long «propertyMethodGet(property)»() {
+				public Long «propertyMethodGet(property)»() {
 					«propertyMethodSafeAccess(property)»;
 					return «property.name».getValue();
 				}
@@ -611,17 +611,17 @@ class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
 
 				«declareSafeAccessAttributeMethod(property, ValuePropertyInstance)»
 				
-				public Command «propertyMethodSet(property)»(EditingDomain ed, boolean value) {
+				public Command «propertyMethodSet(property)»(EditingDomain ed, Boolean value) {
 					«propertyMethodSafeAccess(property)»;
 					return this.«property.name».setValue(ed, value);
 				}
 
-				public void «propertyMethodSet(property)»(boolean value) {
+				public void «propertyMethodSet(property)»(Boolean value) {
 					«propertyMethodSafeAccess(property)»;
 					this.«property.name».setValue(value);
 				}
 
-				public boolean «propertyMethodGet(property)»() {
+				public Boolean «propertyMethodGet(property)»() {
 					«propertyMethodSafeAccess(property)»;
 					return «property.name».getValue();
 				}

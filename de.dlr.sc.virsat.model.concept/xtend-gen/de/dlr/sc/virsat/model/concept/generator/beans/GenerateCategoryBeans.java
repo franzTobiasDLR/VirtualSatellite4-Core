@@ -1118,7 +1118,7 @@ public class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
         _builder.append("public Command ");
         String _propertyMethodSet = GenerateCategoryBeans.this.propertyMethodSet(property);
         _builder.append(_propertyMethodSet);
-        _builder.append("(EditingDomain ed, double value) {");
+        _builder.append("(EditingDomain ed, Double value) {");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
         String _propertyMethodSafeAccess = GenerateCategoryBeans.this.propertyMethodSafeAccess(property);
@@ -1137,7 +1137,7 @@ public class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
         _builder.append("public void ");
         String _propertyMethodSet_1 = GenerateCategoryBeans.this.propertyMethodSet(property);
         _builder.append(_propertyMethodSet_1);
-        _builder.append("(double value) {");
+        _builder.append("(Double value) {");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
         String _propertyMethodSafeAccess_1 = GenerateCategoryBeans.this.propertyMethodSafeAccess(property);
@@ -1153,7 +1153,7 @@ public class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
         _builder.append("}");
         _builder.newLine();
         _builder.newLine();
-        _builder.append("public double ");
+        _builder.append("public Double ");
         String _propertyMethodGet = GenerateCategoryBeans.this.propertyMethodGet(property);
         _builder.append(_propertyMethodGet);
         _builder.append("() {");
@@ -1232,7 +1232,7 @@ public class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
         _builder.append("public Command ");
         String _propertyMethodSet = GenerateCategoryBeans.this.propertyMethodSet(property);
         _builder.append(_propertyMethodSet);
-        _builder.append("(EditingDomain ed, long value) {");
+        _builder.append("(EditingDomain ed, Long value) {");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
         String _propertyMethodSafeAccess = GenerateCategoryBeans.this.propertyMethodSafeAccess(property);
@@ -1251,7 +1251,7 @@ public class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
         _builder.append("public void ");
         String _propertyMethodSet_1 = GenerateCategoryBeans.this.propertyMethodSet(property);
         _builder.append(_propertyMethodSet_1);
-        _builder.append("(long value) {");
+        _builder.append("(Long value) {");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
         String _propertyMethodSafeAccess_1 = GenerateCategoryBeans.this.propertyMethodSafeAccess(property);
@@ -1267,7 +1267,7 @@ public class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
         _builder.append("}");
         _builder.newLine();
         _builder.newLine();
-        _builder.append("public long ");
+        _builder.append("public Long ");
         String _propertyMethodGet = GenerateCategoryBeans.this.propertyMethodGet(property);
         _builder.append(_propertyMethodGet);
         _builder.append("() {");
@@ -1346,7 +1346,7 @@ public class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
         _builder.append("public Command ");
         String _propertyMethodSet = GenerateCategoryBeans.this.propertyMethodSet(property);
         _builder.append(_propertyMethodSet);
-        _builder.append("(EditingDomain ed, boolean value) {");
+        _builder.append("(EditingDomain ed, Boolean value) {");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
         String _propertyMethodSafeAccess = GenerateCategoryBeans.this.propertyMethodSafeAccess(property);
@@ -1365,7 +1365,7 @@ public class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
         _builder.append("public void ");
         String _propertyMethodSet_1 = GenerateCategoryBeans.this.propertyMethodSet(property);
         _builder.append(_propertyMethodSet_1);
-        _builder.append("(boolean value) {");
+        _builder.append("(Boolean value) {");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
         String _propertyMethodSafeAccess_1 = GenerateCategoryBeans.this.propertyMethodSafeAccess(property);
@@ -1381,7 +1381,7 @@ public class GenerateCategoryBeans extends AGeneratorGapGenerator<Category> {
         _builder.append("}");
         _builder.newLine();
         _builder.newLine();
-        _builder.append("public boolean ");
+        _builder.append("public Boolean ");
         String _propertyMethodGet = GenerateCategoryBeans.this.propertyMethodGet(property);
         _builder.append(_propertyMethodGet);
         _builder.append("() {");
