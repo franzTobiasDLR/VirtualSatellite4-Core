@@ -301,7 +301,7 @@ jobs:
     # Deploy Jobs for secured Releases.
     #------------------------------------------------------------
     - stage: build-assemble-deploy
-      if: (tag =~ /^Release/) AND (branch =~ /^feature/)
+      if: (tag =~ /^TestRelease/) AND (branch =~ /^feature/)
       name: Build-Assemble-Deploy - Release
       script:
       - bash/maven_build.sh -j assemble -p release   
