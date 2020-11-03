@@ -1663,7 +1663,7 @@ If you want to know more about it, search for `eclipse OSGI console` in the inte
 == Headless REST API & Server
 
 Virtual Satellite can be run headless as a server that provides a REST API. 
-The REST API can be used to access and manipluate the Virtual Satellite model without the user interface.
+The REST API can be used to access and manipulate the Virtual Satellite model without the user interface.
 It also functions as an interface to connect Virtual Satellite to your own application.
 The API supports the standard HTTP commands GET, PUT, POST and DELETE.
 
@@ -1675,20 +1675,74 @@ By default the REST server communicates over HTTP, so your credentials (username
 
 TIP: Configure the server to use the secure HTTPS connection.
 
-=== The REST API for Users
+=== The REST API
 
-Description of the reposiories api and levels (with an example request).
+The REST API can be accessed via the {server adress}:8000 and currently supports the following requests:
 
-=== The REST Server for Administrators
+=== How to run your own Headless Virtual Satellite Server
 
-Description of the server lifecycle (startup and shutdown).
+:step: 0
+[%header,cols=">8,62a,40a"] 
+|===
 
-Example server configuration file. 
+|Step
+|Task
+|Image
 
-LDAP and HTTPS.
+|{counter:step}.
+|Download the Virtual Satellite Server zip-file from the GitHub releases section.
+|image:chapterInstallation/DownloadGitHubRelease.png[Download]
 
-Description of the admin resource.
+|{counter:step}.
+|Create a configuration file that contains all required configuration (see <<The Configuration File>>).
+|
 
+|{counter:step}.
+|Start the Server executable with *"-configFile {path}"* (defaults to "resources/server.properties")
+|
+
+|===
+
+The Server will start and try to load the repositories.
+Instead of using the REST API you can also add repositories manually (see <<Additionally add a Repository manually>>).
+
+==== The Configuration File
+
+By convention this file is named "server.properties".
+
+.server.properties
+[[server-properties]]
+....
+# Default properties for Virtual Satellite Server configuration
+repository.configurations.dir = ...
+ 
+# Directory into which all projects will be checked out from their repositories. NOT the workspace
+project.repositories.dir = ...
+ 
+# Class of the login service
+login.service.class = org.eclipse.jetty.security.HashLoginService
+ 
+# Location of the .properties file for authentication (WARNING: will only be used if the HashLoginService is used)
+auth.propierties.file = ...
+....
+
+==== Additionally add a Repository manually
+
+Create a {repository}.properties file located in *repository.configurations.dir* (see <<server-properties>>):
+
+.{repository}.properties
+....
+# The name used in the REST API
+project.name=...
+ 
+repository.backend={GIT or SVN}
+repository.remoteURI={uri}
+repository.localPath={localPath}
+repository.credentials.username=...
+repository.credentials.password=...
+....
+
+This will checkout the repository at {uri} into *project.repositories.dir*/repo_{localPath} at the next Server start.
 
 [colophone]
 == Legal - License & Copyright
