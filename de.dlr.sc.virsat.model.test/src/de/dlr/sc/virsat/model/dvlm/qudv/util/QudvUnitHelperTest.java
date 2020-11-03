@@ -9,14 +9,14 @@
  *******************************************************************************/
 package de.dlr.sc.virsat.model.dvlm.qudv.util;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,9 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.dlr.sc.virsat.model.dvlm.qudv.AQuantityKind;
@@ -59,15 +57,6 @@ public class QudvUnitHelperTest {
 	public void setUp() throws Exception {
 		qudvHelper = QudvUnitHelper.getInstance();
 	}
-
-	@After
-	public void tearDown() throws Exception {
-	}	
-	
-	@BeforeClass
-	public static void setUpOnce() {
-		
-	}
 	
 	@Test
 	public void createSimpleUnitTest() {
@@ -91,8 +80,8 @@ public class QudvUnitHelperTest {
 		String uuid2 = simpleUnit2.getUuid().toString();
 		
 		assertNotSame(uuid1, uuid2);
-	
 	}
+	
 	@Test
 	public void createPrefixedUnitTest() {
 		
@@ -122,7 +111,6 @@ public class QudvUnitHelperTest {
 		String uuid2 = prefixedUnit2.getUuid().toString();
 		
 		assertNotSame(uuid1, uuid2);
-	
 	}
 	
 	@Test
@@ -156,7 +144,6 @@ public class QudvUnitHelperTest {
 		String uuid2 = affineConversionUnit2.getUuid().toString();
 		
 		assertNotSame(uuid1, uuid2);
-	
 	}
 	
 	@Test
@@ -188,7 +175,6 @@ public class QudvUnitHelperTest {
 		String uuid2 = linearConversionUnit2.getUuid().toString();
 		
 		assertNotSame(uuid1, uuid2);
-	
 	}
 	
 	@Test
@@ -213,9 +199,7 @@ public class QudvUnitHelperTest {
 		String uuid2 = simpleQuantityKind2.getUuid().toString();
 		
 		assertNotSame(uuid1, uuid2);
-	
 	}
-	
 	
 	@Test
 	public void qudvImportExportTest() throws IOException {
@@ -239,24 +223,22 @@ public class QudvUnitHelperTest {
 		
 		String destination = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString() + "/exportQudv.qudv"; 
 
-		try {
-			qudvHelper.exportModeltoFile(sou1, destination);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		qudvHelper.exportModeltoFile(sou1, destination);
 		
 		assertTrue(sou1.getUnit().contains(simpleUnit));		
 		
-		SystemOfUnits importedSoU = null;
-		importedSoU = qudvHelper.importModelFromFile(destination);
+		SystemOfUnits importedSoU = qudvHelper.importModelFromFile(destination);
 
 		assertNotNull("System of Units got correctly loaded", importedSoU);
 		
 		assertEquals(sou1.getUuid(), importedSoU.getUuid());
 		assertEquals(sou1.getName(), importedSoU.getName());
 		
-		assertEquals(3, importedSoU.getUnit().size());
-		assertEquals(44, importedSoU.getSystemOfQuantities().get(0).getQuantityKind().size());
+		int EXPECTED_UNITS = sou1.getUnit().size();
+		int EXPECTED_QUANTITY_KINDS = sou1.getSystemOfQuantities().get(0).getQuantityKind().size();
+		
+		assertEquals(EXPECTED_UNITS, importedSoU.getUnit().size());
+		assertEquals(EXPECTED_QUANTITY_KINDS, importedSoU.getSystemOfQuantities().get(0).getQuantityKind().size());
 		
 		//without the copySystemOfUnits method the Ids of the imported Qudv model are the same
 		assertEquals(simpleUnit.getUuid(), importedSoU.getUnit().get(0).getUuid());
@@ -305,10 +287,8 @@ public class QudvUnitHelperTest {
 		assertEquals("Retrieved quantitiy kinds has 1 item", retrivedQuantityKinds.size(), 1);
 	}
 
-
 	@Test
-	public void convertToTargetUnitTest() {
-	
+	public void convertFromSourceToTargetUnitTest() {
 		//we simply use the the library to set up the systemOfUnits in the background 
 		SystemOfUnits sou1 = QudvUnitHelper.getInstance().initializeSystemOfUnits("SystemOfUnits", "SoU", "This is the system of units for this study", "N/A");
 		
@@ -329,7 +309,17 @@ public class QudvUnitHelperTest {
 		final double THIRTY_SIX = 36.0;
 		convertedValue = QudvUnitHelper.getInstance().convertFromSourceToTargetUnit(meterPerSecond, TEN, kilometerPerHour);
 		assertEquals(THIRTY_SIX, convertedValue, TEST_EPSILON);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void convertFromSourceToTargetUnitIncompatibleQuantityKindsTest() {
+		//we simply use the the library to set up the systemOfUnits in the background 
+		SystemOfUnits sou1 = QudvUnitHelper.getInstance().initializeSystemOfUnits("SystemOfUnits", "SoU", "This is the system of units for this study", "N/A");
 		
+		// grab two units with incompatible quantity kinds
+		AUnit percentUnit = QudvUnitHelper.getInstance().getUnitByName(sou1, "Percent");
+		AUnit meterPerSecond = QudvUnitHelper.getInstance().getUnitByName(sou1, "Meter Per Second");
+		QudvUnitHelper.getInstance().convertFromSourceToTargetUnit(percentUnit, 0, meterPerSecond);
 	}
 	
 	@Test
@@ -362,79 +352,50 @@ public class QudvUnitHelperTest {
 		sou1.getUnit().add(m);
 		sou1.getUnit().add(kg);
 		
-		//we directly copy the systemOfUnits
-		SystemOfUnits sou2 = sou1;
-		
-		//the systemOfUnits were directly copied, everything should be the same, also the IDs 
-		assertEquals(sou1.getUuid(), sou2.getUuid());
-		assertEquals(sou1.getName(), sou2.getName());
-		
-		//check that three units are there, one systemOfQuantities and eight quantityKinds are there 
-		assertEquals(3, sou1.getUnit().size());
-		assertEquals(1, sou1.getSystemOfQuantities().size());
-		assertEquals(44, sou1.getSystemOfQuantities().get(0).getQuantityKind().size());
-		assertEquals(3, sou2.getUnit().size());
-		assertEquals(1, sou2.getSystemOfQuantities().size());
-		assertEquals(44, sou2.getSystemOfQuantities().get(0).getQuantityKind().size());
-		
-		//without the copySystemOfUnits method the Ids of the three units are the same
-		assertEquals(sou1.getUnit().get(0).getUuid(), sou2.getUnit().get(0).getUuid());
-		assertEquals(sou1.getUnit().get(0).getName(), sou2.getUnit().get(0).getName());
-		assertEquals(sou1.getUnit().get(1).getUuid(), sou2.getUnit().get(1).getUuid());
-		assertEquals(sou1.getUnit().get(1).getName(), sou2.getUnit().get(1).getName());
-		assertEquals(sou1.getUnit().get(2).getUuid(), sou2.getUnit().get(2).getUuid());
-		assertEquals(sou1.getUnit().get(2).getName(), sou2.getUnit().get(2).getName());
-	
-		//same with the systemOfQuantities
-		assertEquals(sou1.getSystemOfQuantities().get(0).getUuid(), sou2.getSystemOfQuantities().get(0).getUuid());
-		assertEquals(sou1.getSystemOfQuantities().get(0).getName(), sou2.getSystemOfQuantities().get(0).getName());
-		
-		//same with the eight quantityKinds
-		assertEquals(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(0).getUuid(), sou2.getSystemOfQuantities().get(0).getQuantityKind().get(0).getUuid());
-		assertEquals(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(0).getName(), sou2.getSystemOfQuantities().get(0).getQuantityKind().get(0).getName());
-		assertEquals(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(1).getUuid(), sou2.getSystemOfQuantities().get(0).getQuantityKind().get(1).getUuid());
-		assertEquals(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(1).getName(), sou2.getSystemOfQuantities().get(0).getQuantityKind().get(1).getName());
-		
 		//now use the ecore.uitl copier to do the copy
-		SystemOfUnits sou3 = qudvHelper.copySystemOfUnits(sou1);
+		SystemOfUnits sou2 = qudvHelper.copySystemOfUnits(sou1);
 		
 		//ids should not be the same
-		assertNotSame(sou1.getUuid(), sou3.getUuid());
-		assertEquals(sou1.getName(), sou3.getName());
+		assertNotSame(sou1.getUuid(), sou2.getUuid());
+		assertEquals(sou1.getName(), sou2.getName());
 		
-		//check that three units are there, one systemOfQunatities and eight quantityKinds are there 
-		assertEquals(3, sou3.getUnit().size());
-		assertEquals(1, sou3.getSystemOfQuantities().size());
-		assertEquals(44, sou3.getSystemOfQuantities().get(0).getQuantityKind().size());
+		//check that the amounts of units, one systemOfQunatities, and quantityKinds match 
+		int EXPECTED_NUMBER_SYSTEM_OF_Quantities = 1;
+		int EXPECTER_NUMBER_UNITS = 3;
+		int EXPECTED_NUMBER_QUANTITY_KINDS = sou1.getSystemOfQuantities().get(0).getQuantityKind().size();
+		
+		assertEquals(EXPECTER_NUMBER_UNITS, sou2.getUnit().size());
+		assertEquals(EXPECTED_NUMBER_SYSTEM_OF_Quantities, sou2.getSystemOfQuantities().size());
+		assertEquals(EXPECTED_NUMBER_QUANTITY_KINDS, sou2.getSystemOfQuantities().get(0).getQuantityKind().size());
 		
 		//after using the copyUnitManagement method the Ids of the three units not the same anymore
-		assertNotSame(sou1.getUnit().get(0).getUuid(), sou3.getUnit().get(0).getUuid());
-		assertEquals(sou1.getUnit().get(0).getName(), sou3.getUnit().get(0).getName());
-		assertNotSame(sou1.getUnit().get(1).getUuid(), sou3.getUnit().get(1).getUuid());
-		assertEquals(sou1.getUnit().get(1).getName(), sou3.getUnit().get(1).getName());
-		assertNotSame(sou1.getUnit().get(2).getUuid(), sou3.getUnit().get(2).getUuid());
-		assertEquals(sou1.getUnit().get(2).getName(), sou3.getUnit().get(2).getName());
+		assertNotSame(sou1.getUnit().get(0).getUuid(), sou2.getUnit().get(0).getUuid());
+		assertEquals(sou1.getUnit().get(0).getName(), sou2.getUnit().get(0).getName());
+		assertNotSame(sou1.getUnit().get(1).getUuid(), sou2.getUnit().get(1).getUuid());
+		assertEquals(sou1.getUnit().get(1).getName(), sou2.getUnit().get(1).getName());
+		assertNotSame(sou1.getUnit().get(2).getUuid(), sou2.getUnit().get(2).getUuid());
+		assertEquals(sou1.getUnit().get(2).getName(), sou2.getUnit().get(2).getName());
 		
 		//same with the systemOfQuantities
-		assertNotSame(sou1.getSystemOfQuantities().get(0).getUuid(), sou3.getSystemOfQuantities().get(0).getUuid());
-		assertEquals(sou1.getSystemOfQuantities().get(0).getName(), sou3.getSystemOfQuantities().get(0).getName());
+		assertNotSame(sou1.getSystemOfQuantities().get(0).getUuid(), sou2.getSystemOfQuantities().get(0).getUuid());
+		assertEquals(sou1.getSystemOfQuantities().get(0).getName(), sou2.getSystemOfQuantities().get(0).getName());
 		
 		//same with the two quantityKinds
-		assertNotSame(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(0).getUuid(), sou3.getSystemOfQuantities().get(0).getQuantityKind().get(0).getUuid());
-		assertEquals(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(0).getName(), sou3.getSystemOfQuantities().get(0).getQuantityKind().get(0).getName());
-		assertNotSame(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(1).getUuid(), sou3.getSystemOfQuantities().get(0).getQuantityKind().get(1).getUuid());
-		assertEquals(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(1).getName(), sou3.getSystemOfQuantities().get(0).getQuantityKind().get(1).getName());
+		assertNotSame(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(0).getUuid(), sou2.getSystemOfQuantities().get(0).getQuantityKind().get(0).getUuid());
+		assertEquals(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(0).getName(), sou2.getSystemOfQuantities().get(0).getQuantityKind().get(0).getName());
+		assertNotSame(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(1).getUuid(), sou2.getSystemOfQuantities().get(0).getQuantityKind().get(1).getUuid());
+		assertEquals(sou1.getSystemOfQuantities().get(0).getQuantityKind().get(1).getName(), sou2.getSystemOfQuantities().get(0).getQuantityKind().get(1).getName());
 	
 		//Last but not least we check for the references
 		//in the test data we had kg referencing to g (prefixed unit)
 	
 		//retrieve the third unit, which was kg and cast it to PrefixedUnit, so we can actually do what we want to do
-		PrefixedUnit prefixedUnit = (PrefixedUnit) sou3.getUnit().get(2);
+		PrefixedUnit prefixedUnit = (PrefixedUnit) sou2.getUnit().get(2);
 		//and check that the reference is not null
 		assertNotNull(prefixedUnit.getReferenceUnit());
 		//then we check if the reference is pointing to the correct unit, by checking the id and the name
-		assertEquals(prefixedUnit.getReferenceUnit().getUuid(), sou3.getUnit().get(0).getUuid());
-		assertEquals(prefixedUnit.getReferenceUnit().getName(), sou3.getUnit().get(0).getName());
+		assertEquals(prefixedUnit.getReferenceUnit().getUuid(), sou2.getUnit().get(0).getUuid());
+		assertEquals(prefixedUnit.getReferenceUnit().getName(), sou2.getUnit().get(0).getName());
 		
 	}
 
@@ -458,7 +419,6 @@ public class QudvUnitHelperTest {
 		//if both are not set, it should return false as well
 		pound = qudvHelper.createSimpleUnit("pound", "pd", "pound of coffee", "http://pound.virsat.dlr.de", null);
 		assertFalse(qudvHelper.haveSameQuantityKind(g, pound));
-
 	}
 	
 	@Test
@@ -504,7 +464,6 @@ public class QudvUnitHelperTest {
 		map2.put(length, 2.0);
 		assertFalse(qudvHelper.haveSameQuantityKind(map1, map2));
 		assertFalse(qudvHelper.haveSameQuantityKind(map2, map1));
-		
 	}
 	
 	@Test
@@ -514,20 +473,17 @@ public class QudvUnitHelperTest {
 		AQuantityKind mass = qudvHelper.createSimpleQuantityKind("mass", "M", "heavy Mass", "http://mass.virsat.dlr.de");
 		AQuantityKind time = qudvHelper.createSimpleQuantityKind("Time", "T", "timeQK", "");
 		
-		Map<AQuantityKind, Double> factorMap = new HashMap<AQuantityKind, Double>();
-		Map<AQuantityKind, Double> forceBaseMap = new HashMap<AQuantityKind, Double>();
-		Map<AQuantityKind, Double> accelerationBaseMap = new HashMap<AQuantityKind, Double>();
-		
 		// some coefficient 
 		final Double M2 = -2.0;
 		
 		//force as a derived quantity kind
+		Map<AQuantityKind, Double> factorMap = new HashMap<AQuantityKind, Double>();
 		factorMap.clear();
 		factorMap.put(length, 1.0);
 		factorMap.put(time, M2);
 		DerivedQuantityKind acceleration = qudvHelper.createAndAddDerivedQuantityKind("acceleration", "L¹ T⁻²", "accelerationQK", "",  factorMap);
 		
-		accelerationBaseMap = qudvHelper.getBaseQuantityKinds(acceleration);
+		Map<AQuantityKind, Double> accelerationBaseMap = qudvHelper.getBaseQuantityKinds(acceleration);
 		
 		//check for the right number of elements in the forceBaseMap
 		assertEquals(2, accelerationBaseMap.size());
@@ -550,7 +506,7 @@ public class QudvUnitHelperTest {
 
 		DerivedQuantityKind force = qudvHelper.createAndAddDerivedQuantityKind("Force", "L¹ M¹ T⁻²", "forceQK", "",  factorMap);
 		
-		forceBaseMap = qudvHelper.getBaseQuantityKinds(force);
+		Map<AQuantityKind, Double> forceBaseMap = qudvHelper.getBaseQuantityKinds(force);
 		
 		//check for the right number of elements in the forceBaseMap
 		assertEquals(3, forceBaseMap.size());
@@ -598,8 +554,7 @@ public class QudvUnitHelperTest {
 		map2.put(electricCurrent, 4.2);
 		
 		//now merge the maps and make some checks
-		Map<AQuantityKind, Double> mergedMap = new HashMap<AQuantityKind, Double>();
-		mergedMap = qudvHelper.mergeMaps(map1, map2, QudvUnitHelper.QudvCalcMethod.ADD);
+		Map<AQuantityKind, Double> mergedMap = qudvHelper.mergeMaps(map1, map2, QudvUnitHelper.QudvCalcMethod.ADD);
 		
 		//check if all four keys are present
 		assertEquals(3, mergedMap.size());

@@ -12,17 +12,21 @@ package de.dlr.sc.virsat.model.extension.tests.model;
 // *****************************************************************
 // * Import Statements
 // *****************************************************************
-import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
+import javax.xml.bind.annotation.XmlAccessorType;
 import de.dlr.sc.virsat.model.concept.list.TypeSafeArrayInstanceList;
 import de.dlr.sc.virsat.model.concept.types.category.IBeanCategoryAssignment;
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
-import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
-import de.dlr.sc.virsat.model.concept.types.category.ABeanCategoryAssignment;
+import javax.xml.bind.annotation.XmlRootElement;
 import de.dlr.sc.virsat.model.dvlm.categories.util.CategoryInstantiator;
 import de.dlr.sc.virsat.model.concept.list.IBeanList;
 import de.dlr.sc.virsat.model.dvlm.categories.Category;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ArrayInstance;
 import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyString;
+import javax.xml.bind.annotation.XmlAccessType;
+import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
+import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
+import de.dlr.sc.virsat.model.ext.core.model.GenericCategory;
+import javax.xml.bind.annotation.XmlElement;
 
 
 // *****************************************************************
@@ -37,7 +41,9 @@ import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyString;
  * 
  * 
  */	
-public abstract class ATestCategoryIntrinsicArray extends ABeanCategoryAssignment implements IBeanCategoryAssignment {
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class ATestCategoryIntrinsicArray extends GenericCategory implements IBeanCategoryAssignment {
 
 	public static final String FULL_QUALIFIED_CATEGORY_NAME = "de.dlr.sc.virsat.model.extension.tests.TestCategoryIntrinsicArray";
 	
@@ -76,33 +82,35 @@ public abstract class ATestCategoryIntrinsicArray extends ABeanCategoryAssignmen
 	// *****************************************************************
 	// * Array Attribute: testStringArrayDynamic
 	// *****************************************************************
-	private IBeanList<BeanPropertyString> testStringArrayDynamic = new TypeSafeArrayInstanceList<>(BeanPropertyString.class);
+	private IBeanList<BeanPropertyString> testStringArrayDynamicBean = new TypeSafeArrayInstanceList<>(BeanPropertyString.class);
 	
-	private void safeAccessTestStringArrayDynamic() {
-		if (testStringArrayDynamic.getArrayInstance() == null) {
-			testStringArrayDynamic.setArrayInstance((ArrayInstance) helper.getPropertyInstance("testStringArrayDynamic"));
+	private void safeAccessTestStringArrayDynamicBean() {
+		if (testStringArrayDynamicBean.getArrayInstance() == null) {
+			testStringArrayDynamicBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("testStringArrayDynamic"));
 		}
 	}
 	
-	public IBeanList<BeanPropertyString> getTestStringArrayDynamic() {
-		safeAccessTestStringArrayDynamic();
-		return testStringArrayDynamic;
+	@XmlElement
+	public IBeanList<BeanPropertyString> getTestStringArrayDynamicBean() {
+		safeAccessTestStringArrayDynamicBean();
+		return testStringArrayDynamicBean;
 	}
 	
 	// *****************************************************************
 	// * Array Attribute: testStringArrayStatic
 	// *****************************************************************
-	private IBeanList<BeanPropertyString> testStringArrayStatic = new TypeSafeArrayInstanceList<>(BeanPropertyString.class);
+	private IBeanList<BeanPropertyString> testStringArrayStaticBean = new TypeSafeArrayInstanceList<>(BeanPropertyString.class);
 	
-	private void safeAccessTestStringArrayStatic() {
-		if (testStringArrayStatic.getArrayInstance() == null) {
-			testStringArrayStatic.setArrayInstance((ArrayInstance) helper.getPropertyInstance("testStringArrayStatic"));
+	private void safeAccessTestStringArrayStaticBean() {
+		if (testStringArrayStaticBean.getArrayInstance() == null) {
+			testStringArrayStaticBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("testStringArrayStatic"));
 		}
 	}
 	
-	public IBeanList<BeanPropertyString> getTestStringArrayStatic() {
-		safeAccessTestStringArrayStatic();
-		return testStringArrayStatic;
+	@XmlElement
+	public IBeanList<BeanPropertyString> getTestStringArrayStaticBean() {
+		safeAccessTestStringArrayStaticBean();
+		return testStringArrayStaticBean;
 	}
 	
 	

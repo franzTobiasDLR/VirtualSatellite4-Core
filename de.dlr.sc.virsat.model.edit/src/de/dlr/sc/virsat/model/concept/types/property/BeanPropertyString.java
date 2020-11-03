@@ -9,11 +9,14 @@
  *******************************************************************************/
 package de.dlr.sc.virsat.model.concept.types.property;
 
+import javax.xml.bind.annotation.XmlElement;
+
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
 
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.PropertyinstancesPackage;
+import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ValuePropertyInstance;
 
 /**
  * Class to wrap IntPropertyInstances
@@ -22,6 +25,20 @@ import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.Propertyinstance
  */
 public class BeanPropertyString extends ABeanProperty<String> {
 
+	/**
+	 * Standard Constructor
+	 */
+	public BeanPropertyString() {
+	}
+	
+	/**
+	 * Constructor to directly set the type instance
+	 * @param vpi the type instance to be used
+	 */
+	public BeanPropertyString(ValuePropertyInstance vpi) {
+		setTypeInstance(vpi);
+	}
+	
 	@Override
 	public Command setValue(EditingDomain ed, String value) {
 		return SetCommand.create(ed, ti, PropertyinstancesPackage.Literals.VALUE_PROPERTY_INSTANCE__VALUE, value);
@@ -33,6 +50,7 @@ public class BeanPropertyString extends ABeanProperty<String> {
 	}
 	
 	@Override
+	@XmlElement(nillable = true)
 	public String getValue() {
 		return ti.getValue();
 	}

@@ -9,6 +9,8 @@
  *******************************************************************************/
 package de.dlr.sc.virsat.model.concept.types.category;
 
+import javax.xml.bind.annotation.XmlElement;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -115,7 +117,7 @@ public abstract class ABeanCategoryAssignment extends ABeanObject<CategoryAssign
 		// Get the containing SEI bean
 		IBeanStructuralElementInstance beanSei = getParent();
 		if (beanSei != null) {
-			BeanStructuralElementInstance parent = beanSei.getParentSeiBean();
+			BeanStructuralElementInstance parent = beanSei.getParent();
 			
 			while (parent != null) {
 				// Get the next parent and check if there is CA of interest attached
@@ -124,7 +126,7 @@ public abstract class ABeanCategoryAssignment extends ABeanObject<CategoryAssign
 					return caBean;
 				}
 				// Nothing found. try the next parent
-				parent = parent.getParentSeiBean();
+				parent = parent.getParent();
 			}
 		}
 		
@@ -150,6 +152,7 @@ public abstract class ABeanCategoryAssignment extends ABeanObject<CategoryAssign
 	}
 	
 	@Override
+	@XmlElement(nillable = true)
 	public String getName() {
 		return ti.getName();
 	}

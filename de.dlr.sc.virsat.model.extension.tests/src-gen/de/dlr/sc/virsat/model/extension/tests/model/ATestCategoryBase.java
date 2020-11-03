@@ -12,25 +12,29 @@ package de.dlr.sc.virsat.model.extension.tests.model;
 // *****************************************************************
 // * Import Statements
 // *****************************************************************
+import javax.xml.bind.annotation.XmlAccessorType;
 import de.dlr.sc.virsat.model.concept.types.category.IBeanCategoryAssignment;
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
-import org.eclipse.core.runtime.CoreException;
+import javax.xml.bind.annotation.XmlRootElement;
 import de.dlr.sc.virsat.model.dvlm.categories.util.CategoryInstantiator;
 import de.dlr.sc.virsat.model.concept.list.IBeanList;
-import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.PropertyinstancesPackage;
 import de.dlr.sc.virsat.model.dvlm.categories.Category;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ArrayInstance;
-import de.dlr.sc.virsat.model.concept.types.factory.BeanCategoryAssignmentFactory;
+import javax.xml.bind.annotation.XmlAccessType;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ReferencePropertyInstance;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyReference;
 import org.eclipse.emf.edit.domain.EditingDomain;
+import de.dlr.sc.virsat.model.concept.list.TypeSafeComposedPropertyBeanList;
 import org.eclipse.emf.common.command.Command;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.UnitValuePropertyInstance;
-import org.eclipse.emf.edit.command.SetCommand;
+import de.dlr.sc.virsat.model.dvlm.json.ABeanObjectAdapter;
 import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
-import de.dlr.sc.virsat.model.extension.tests.model.TestCategoryBase;
-import de.dlr.sc.virsat.model.concept.types.category.ABeanCategoryAssignment;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import de.dlr.sc.virsat.model.concept.list.TypeSafeComposedPropertyInstanceList;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyComposed;
+import de.dlr.sc.virsat.model.ext.core.model.GenericCategory;
+import javax.xml.bind.annotation.XmlElement;
 import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyInt;
 
 
@@ -46,7 +50,9 @@ import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyInt;
  * 
  * 
  */	
-public abstract class ATestCategoryBase extends ABeanCategoryAssignment implements IBeanCategoryAssignment {
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class ATestCategoryBase extends GenericCategory implements IBeanCategoryAssignment {
 
 	public static final String FULL_QUALIFIED_CATEGORY_NAME = "de.dlr.sc.virsat.model.extension.tests.TestCategoryBase";
 	
@@ -99,6 +105,20 @@ public abstract class ATestCategoryBase extends ABeanCategoryAssignment implemen
 		return testArray;
 	}
 	
+	private IBeanList<BeanPropertyComposed<TestCategoryBase>> testArrayBean = new TypeSafeComposedPropertyBeanList<>();
+	
+	private void safeAccessTestArrayBean() {
+		if (testArrayBean.getArrayInstance() == null) {
+			testArrayBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("testArray"));
+		}
+	}
+	
+	@XmlElement
+	public IBeanList<BeanPropertyComposed<TestCategoryBase>> getTestArrayBean() {
+		safeAccessTestArrayBean();
+		return testArrayBean;
+	}
+	
 	// *****************************************************************
 	// * Attribute: testBaseProperty
 	// *****************************************************************
@@ -130,6 +150,7 @@ public abstract class ATestCategoryBase extends ABeanCategoryAssignment implemen
 		return testBaseProperty.isSet();
 	}
 	
+	@XmlElement
 	public BeanPropertyInt getTestBasePropertyBean() {
 		safeAccessTestBaseProperty();
 		return testBaseProperty;
@@ -138,49 +159,33 @@ public abstract class ATestCategoryBase extends ABeanCategoryAssignment implemen
 	// *****************************************************************
 	// * Attribute: testReference
 	// *****************************************************************
-	private TestCategoryBase testReference;
+	private BeanPropertyReference<TestCategoryBase> testReference = new BeanPropertyReference<>();
 	
 	private void safeAccessTestReference() {
 		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("testReference");
-		CategoryAssignment ca = (CategoryAssignment) propertyInstance.getReference();
-		
-		if (ca != null) {
-			if (testReference == null) {
-				createTestReference(ca);
-			}
-			testReference.setTypeInstance(ca);
-		} else {
-			testReference = null;
-		}
+		testReference.setTypeInstance(propertyInstance);
 	}
 	
-	private void createTestReference(CategoryAssignment ca) {
-		try {
-			BeanCategoryAssignmentFactory beanFactory = new BeanCategoryAssignmentFactory();
-			testReference = (TestCategoryBase) beanFactory.getInstanceFor(ca);
-		} catch (CoreException e) {
-			
-		}
-	}
-					
+	@XmlElement(nillable = true)
+	@XmlJavaTypeAdapter(ABeanObjectAdapter.class)
 	public TestCategoryBase getTestReference() {
 		safeAccessTestReference();
-		return testReference;
+		return testReference.getValue();
 	}
 	
 	public Command setTestReference(EditingDomain ed, TestCategoryBase value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("testReference");
-		CategoryAssignment ca = value.getTypeInstance();
-		return SetCommand.create(ed, propertyInstance, PropertyinstancesPackage.Literals.REFERENCE_PROPERTY_INSTANCE__REFERENCE, ca);
+		safeAccessTestReference();
+		return testReference.setValue(ed, value);
 	}
 	
 	public void setTestReference(TestCategoryBase value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("testReference");
-		if (value != null) {
-			propertyInstance.setReference(value.getTypeInstance());
-		} else {
-			propertyInstance.setReference(null);
-		}
+		safeAccessTestReference();
+		testReference.setValue(value);
+	}
+	
+	public BeanPropertyReference<TestCategoryBase> getTestReferenceBean() {
+		safeAccessTestReference();
+		return testReference;
 	}
 	
 	

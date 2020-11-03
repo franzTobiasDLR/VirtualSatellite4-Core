@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.workspace.util.WorkspaceSynchronizer.Delegate;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.editor.DefaultUpdateBehavior;
@@ -59,6 +60,7 @@ public class VirSatDiagramUpdateBehavior extends DefaultUpdateBehavior {
 						return;
 					}
 					
+					updateContent();
 					diagramBehavior.refreshContent();
 					refreshDecorators();
 					break;
@@ -84,6 +86,13 @@ public class VirSatDiagramUpdateBehavior extends DefaultUpdateBehavior {
 		});
 	}
 	
+	/**
+	 * Override this method to do some automatic update every time there is a resource change.
+	 */
+	protected void updateContent() {
+		//no update by default
+	}
+
 	/**
 	 * React to resources getting closed by either handling the change or closing the editor
 	 * @param affectedResources the affected resources of some change
@@ -171,6 +180,14 @@ public class VirSatDiagramUpdateBehavior extends DefaultUpdateBehavior {
 	@Override
 	public void handleActivate() {
 		refreshDecorators();
+	}
+	
+	@Override
+	protected Delegate createWorkspaceSynchronizerDelegate() {
+		// Disable the Graphitti default workspace synchronizer
+		// Otherwise the Graphiti workspace synchronizer will create his own 
+		// workspace synchronization requests in addition to ours
+		return null;
 	}
 	
 }

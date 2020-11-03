@@ -9,6 +9,8 @@
  *******************************************************************************/
 package de.dlr.sc.virsat.model.concept.types.property;
 
+import javax.xml.bind.annotation.XmlElement;
+
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
@@ -44,12 +46,19 @@ public class BeanPropertyInt extends ABeanUnitProperty<Long> {
 	
 	@Override
 	public void setValue(Long value) {
-		ti.setValue(Long.toString(value));
+		if (value == null) {
+			ti.setValue(null);
+		} else {
+			ti.setValue(Long.toString(value));
+		}
 	}
 	
 	@Override
+	@XmlElement(nillable = true)
 	public Long getValue() throws NumberFormatException {
-		String stringValue = isSet() ? ti.getValue() : "";
-		return Long.parseLong(stringValue);
+		if (isSet()) {
+			return Long.parseLong(ti.getValue());
+		}
+		return null;
 	}
 }

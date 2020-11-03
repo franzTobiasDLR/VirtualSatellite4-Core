@@ -9,11 +9,14 @@
  *******************************************************************************/
 package de.dlr.sc.virsat.model.concept.types.property;
 
+import javax.xml.bind.annotation.XmlElement;
+
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
 
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.PropertyinstancesPackage;
+import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ValuePropertyInstance;
 
 /**
  * Class to wrap BooleanPropertyInstances
@@ -21,6 +24,20 @@ import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.Propertyinstance
  *
  */
 public class BeanPropertyBoolean extends ABeanProperty<Boolean> {
+
+	/**
+	 * Standard Constructor
+	 */
+	public BeanPropertyBoolean() {
+	}
+	
+	/**
+	 * Constructor to directly set the type instance
+	 * @param vpi the type instance to be used
+	 */
+	public BeanPropertyBoolean(ValuePropertyInstance vpi) {
+		setTypeInstance(vpi);
+	}
 	
 	@Override
 	public Command setValue(EditingDomain ed, Boolean bool) {
@@ -33,6 +50,7 @@ public class BeanPropertyBoolean extends ABeanProperty<Boolean> {
 	}
 	
 	@Override
+	@XmlElement(nillable = true)
 	public Boolean getValue() {
 		return Boolean.parseBoolean(ti.getValue());
 	}

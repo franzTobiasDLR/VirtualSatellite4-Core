@@ -34,12 +34,13 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
-import de.dlr.sc.virsat.build.marker.ui.EsfMarkerImageProvider;
 import de.dlr.sc.virsat.model.dvlm.categories.ATypeDefinition;
 import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
 import de.dlr.sc.virsat.model.dvlm.categories.propertydefinitions.ReferenceProperty;
@@ -72,9 +73,14 @@ public abstract class UiSnippetCustomRequirementsAttributeTable extends AUiSnipp
 	protected static final String COLUMN_TEXT_STATUS = "Status";
 	protected static final String COLUMN_ATTRIBUTE_SEPARATOR = " / ";
 
+	protected static final String COLUMN_TEXT_VERIFICATION = "Verification";
+	
 	protected static final String FQN_PROPERTY_REQUIREMENT_TYPE = Requirement.FULL_QUALIFIED_CATEGORY_NAME + "." + Requirement.PROPERTY_REQTYPE;
 
+	private static final int TABLE_HIGHT = 500;
 	private static final int STATUS_COLUMN_WIDTH = 100;
+	private static final int TRACE_COLUMN_WIDTH = 100;
+	private static final int FIXED_COLUMNS_NUMBER = 2; // status + verification column
 	private static final String COLUMN_PREFIX = "attColumn";
 	
 	protected final String arrayInstanceID;
@@ -82,9 +88,8 @@ public abstract class UiSnippetCustomRequirementsAttributeTable extends AUiSnipp
 	protected Set<RequirementType> requirementTypes = new HashSet<RequirementType>();
 	protected int maxNumberAttributes = 0;
 
-	protected EsfMarkerImageProvider emip = new EsfMarkerImageProvider();
-
 	protected TableViewerColumn colStatus = null;
+	protected TableViewerColumn colValidation = null;
 	protected List<TableViewerColumn> attColumns;
 	
 	protected boolean controlListenerActive = true;
@@ -123,9 +128,19 @@ public abstract class UiSnippetCustomRequirementsAttributeTable extends AUiSnipp
 					.get(RequirementsAttributeLabelProvider.REQUIREMENT_STATUS_PROPERTY_NUMBER)));
 
 			colStatus.getColumn().setWidth(STATUS_COLUMN_WIDTH);
-
+			colStatus.getColumn().addControlListener(this);
 			// initialize list for attribute column
 			attColumns = new ArrayList<>();
+			attColumns.add(colStatus);
+		}
+		
+		if (colValidation == null) {
+			colValidation = (TableViewerColumn) createDefaultColumn(COLUMN_TEXT_VERIFICATION);
+
+			colValidation.getColumn().setWidth(TRACE_COLUMN_WIDTH);
+			colValidation.getColumn().addControlListener(this);
+			attColumns.add(colValidation);
+
 		}
 
 		if (model instanceof CategoryAssignment) {
@@ -152,28 +167,29 @@ public abstract class UiSnippetCustomRequirementsAttributeTable extends AUiSnipp
 
 			// Add necessary table columns
 			for (int i = 0; i < maxNumberAttributes; i++) {
-				String columnName = "";
+				int tableIndexColumn = i + FIXED_COLUMNS_NUMBER; 
+				StringBuilder columnName = new StringBuilder();
 				for (RequirementType requirementType : requirementTypes) {
 
 					if (requirementType.getAttributes().size() > i) {
 						String name = requirementType.getAttributes().get(i).getName();
-						boolean notYetSpecified = !columnName.contains(name);
+						boolean notYetSpecified = columnName.indexOf(name) == -1;
 						
 						// Add separator if column is used for different attributes
-						if (!columnName.equals("") && notYetSpecified) {
-							columnName += COLUMN_ATTRIBUTE_SEPARATOR;
+						if (columnName.length() != 0 && notYetSpecified) {
+							columnName.append(COLUMN_ATTRIBUTE_SEPARATOR);
 						}
 
 						if (notYetSpecified) {
-							columnName += name;
+							columnName.append(name);
 						}
 					}
 				}
 
-				if (attColumns.size() > i) {
-					attColumns.get(i).getColumn().setText(columnName);
+				if (attColumns.size() > tableIndexColumn) {
+					attColumns.get(tableIndexColumn).getColumn().setText(columnName.toString());
 				} else {
-					TableViewerColumn newColumn = (TableViewerColumn) createDefaultColumn(columnName);
+					TableViewerColumn newColumn = (TableViewerColumn) createDefaultColumn(columnName.toString());
 					newColumn.getColumn().addControlListener(this);
 					newColumn.setEditingSupport(new RequirementsAttributeValuePerColumnEditingSupport(editingDomain, columnViewer, i));
 					attColumns.add(newColumn);
@@ -183,6 +199,13 @@ public abstract class UiSnippetCustomRequirementsAttributeTable extends AUiSnipp
 		restoreColumnWitdh();
 	}
 	
+	@Override
+	protected Table createDefaultTable(FormToolkit toolkit, Composite sectionBody) {
+		Table table = super.createDefaultTable(toolkit, sectionBody);
+		GridData gridDataTable = (GridData) table.getLayoutData();
+		gridDataTable.heightHint = TABLE_HIGHT;
+		return table;
+	}
 
 	/**
 	 * this method get the label provider

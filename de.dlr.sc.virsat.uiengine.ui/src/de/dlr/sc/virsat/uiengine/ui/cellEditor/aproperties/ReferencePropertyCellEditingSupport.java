@@ -9,6 +9,10 @@
  *******************************************************************************/
 package de.dlr.sc.virsat.uiengine.ui.cellEditor.aproperties;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.command.UnexecutableCommand;
 import org.eclipse.emf.edit.command.SetCommand;
@@ -20,6 +24,9 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.DialogCellEditor;
+import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -40,6 +47,7 @@ import de.dlr.sc.virsat.model.dvlm.provider.DVLMDVLMItemProviderAdapterFactory;
 import de.dlr.sc.virsat.model.dvlm.roles.provider.RolesItemProviderAdapterFactory;
 import de.dlr.sc.virsat.model.dvlm.structural.provider.DVLMStructuralItemProviderAdapterFactory;
 import de.dlr.sc.virsat.model.dvlm.units.provider.UnitsItemProviderAdapterFactory;
+import de.dlr.sc.virsat.project.ui.contentProvider.VirSatFilteredListContentProvider;
 import de.dlr.sc.virsat.uiengine.ui.dialog.ReferenceSelectionDialog;
 
 /**
@@ -91,6 +99,7 @@ public class ReferencePropertyCellEditingSupport extends APropertyCellEditingSup
 				dialog.setAllowMultiple(false);
 				dialog.setDoubleClickSelects(true);
 				setReferenceDialogInput(propertyInstance.eResource());
+				setFiltersForDialog();
 				dialog.setInitialSelection(toSelect);
 				if (dialog.open() == Dialog.OK) {
 					Object selection = dialog.getFirstResult();
@@ -101,9 +110,36 @@ public class ReferencePropertyCellEditingSupport extends APropertyCellEditingSup
 				return null;
 			}
 			
+			@Override
+			protected Button createButton(final Composite parent) {
+				// This override is needed to the following eclipse bug
+				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=193081
+				Button button = super.createButton(parent);
+
+				// This listener hands back traversal control to the cell rather the button. 
+				// This is important if TableEditor functionality is used. if the button handles the traverse 
+				// signal, it will try to select the next button but not the next cell.
+				button.addListener(SWT.Traverse, (event) -> parent.notifyListeners(SWT.Traverse, event));
+				return button;
+			}
 		};
 		return editor;
 	}
+	
+	protected void setFiltersForDialog() {
+		VirSatFilteredListContentProvider cp = (VirSatFilteredListContentProvider) ((ReferenceSelectionDialog) dialog).getContentProvider();
+		getResultFilters().forEach(cp::addFunctionFilterToGetElement);
+	}
+	
+	/**
+	 * An overridable method to filter the dialogs selectable objects
+	 * 
+	 * @return filter functions
+	 */
+	protected List<Function<Object, Boolean>> getResultFilters() {
+		return new ArrayList<>();
+	}
+
 	/**
 	 * An overridable method to set dialog input
 	 * @param input the input for the dialog
@@ -117,6 +153,11 @@ public class ReferencePropertyCellEditingSupport extends APropertyCellEditingSup
 		APropertyInstance propertyInstance = getPropertyInstance(element);
 		ATypeInstance value = ((ReferencePropertyInstance) propertyInstance).getReference();
 		return value;
+	}
+	
+	@Override
+	protected void initializeCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
+		cellEditor.setValue(cell.getText());
 	}
 	
 	@Override

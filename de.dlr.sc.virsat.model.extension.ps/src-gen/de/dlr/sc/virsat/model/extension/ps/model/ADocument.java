@@ -12,20 +12,24 @@ package de.dlr.sc.virsat.model.extension.ps.model;
 // *****************************************************************
 // * Import Statements
 // *****************************************************************
+import javax.xml.bind.annotation.XmlAccessorType;
 import de.dlr.sc.virsat.model.concept.types.category.IBeanCategoryAssignment;
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
 import org.eclipse.emf.common.util.URI;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ValuePropertyInstance;
+import javax.xml.bind.annotation.XmlRootElement;
 import de.dlr.sc.virsat.model.dvlm.categories.util.CategoryInstantiator;
 import de.dlr.sc.virsat.model.dvlm.categories.Category;
 import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyString;
+import javax.xml.bind.annotation.XmlAccessType;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ResourcePropertyInstance;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emf.common.command.Command;
 import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
-import de.dlr.sc.virsat.model.concept.types.category.ABeanCategoryAssignment;
 import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyResource;
+import de.dlr.sc.virsat.model.ext.core.model.GenericCategory;
+import javax.xml.bind.annotation.XmlElement;
 
 
 // *****************************************************************
@@ -40,7 +44,9 @@ import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyResource;
  * Category to describe documents such as specifications
  * 
  */	
-public abstract class ADocument extends ABeanCategoryAssignment implements IBeanCategoryAssignment {
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class ADocument extends GenericCategory implements IBeanCategoryAssignment {
 
 	public static final String FULL_QUALIFIED_CATEGORY_NAME = "de.dlr.sc.virsat.model.extension.ps.Document";
 	
@@ -104,6 +110,7 @@ public abstract class ADocument extends ABeanCategoryAssignment implements IBean
 		return documentName.getValue();
 	}
 	
+	@XmlElement
 	public BeanPropertyString getDocumentNameBean() {
 		safeAccessDocumentName();
 		return documentName;
@@ -135,6 +142,7 @@ public abstract class ADocument extends ABeanCategoryAssignment implements IBean
 		return note.getValue();
 	}
 	
+	@XmlElement
 	public BeanPropertyString getNoteBean() {
 		safeAccessNote();
 		return note;
@@ -166,6 +174,7 @@ public abstract class ADocument extends ABeanCategoryAssignment implements IBean
 		return url.getValue();
 	}
 	
+	@XmlElement
 	public BeanPropertyString getUrlBean() {
 		safeAccessUrl();
 		return url;
@@ -197,6 +206,7 @@ public abstract class ADocument extends ABeanCategoryAssignment implements IBean
 		return file.getValue();
 	}
 	
+	@XmlElement
 	public BeanPropertyResource getFileBean() {
 		safeAccessFile();
 		return file;

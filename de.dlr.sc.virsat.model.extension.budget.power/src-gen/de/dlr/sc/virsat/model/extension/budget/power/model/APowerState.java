@@ -12,23 +12,26 @@ package de.dlr.sc.virsat.model.extension.budget.power.model;
 // *****************************************************************
 // * Import Statements
 // *****************************************************************
+import javax.xml.bind.annotation.XmlAccessorType;
 import de.dlr.sc.virsat.model.concept.types.category.IBeanCategoryAssignment;
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
-import org.eclipse.core.runtime.CoreException;
+import javax.xml.bind.annotation.XmlRootElement;
 import de.dlr.sc.virsat.model.dvlm.categories.util.CategoryInstantiator;
-import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.PropertyinstancesPackage;
 import de.dlr.sc.virsat.model.dvlm.categories.Category;
-import de.dlr.sc.virsat.model.concept.types.factory.BeanCategoryAssignmentFactory;
+import javax.xml.bind.annotation.XmlAccessType;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ReferencePropertyInstance;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyReference;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emf.common.command.Command;
-import org.eclipse.emf.edit.command.SetCommand;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.UnitValuePropertyInstance;
+import de.dlr.sc.virsat.model.dvlm.json.ABeanObjectAdapter;
 import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
-import de.dlr.sc.virsat.model.concept.types.category.ABeanCategoryAssignment;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyFloat;
 import de.dlr.sc.virsat.model.extension.statemachines.model.State;
+import de.dlr.sc.virsat.model.ext.core.model.GenericCategory;
+import javax.xml.bind.annotation.XmlElement;
 
 
 // *****************************************************************
@@ -43,7 +46,9 @@ import de.dlr.sc.virsat.model.extension.statemachines.model.State;
  * Power data for a single equipment mode
  * 
  */	
-public abstract class APowerState extends ABeanCategoryAssignment implements IBeanCategoryAssignment {
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class APowerState extends GenericCategory implements IBeanCategoryAssignment {
 
 	public static final String FULL_QUALIFIED_CATEGORY_NAME = "de.dlr.sc.virsat.model.extension.budget.power.PowerState";
 	
@@ -84,49 +89,33 @@ public abstract class APowerState extends ABeanCategoryAssignment implements IBe
 	// *****************************************************************
 	// * Attribute: mode
 	// *****************************************************************
-	private State mode;
+	private BeanPropertyReference<State> mode = new BeanPropertyReference<>();
 	
 	private void safeAccessMode() {
 		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("mode");
-		CategoryAssignment ca = (CategoryAssignment) propertyInstance.getReference();
-		
-		if (ca != null) {
-			if (mode == null) {
-				createMode(ca);
-			}
-			mode.setTypeInstance(ca);
-		} else {
-			mode = null;
-		}
+		mode.setTypeInstance(propertyInstance);
 	}
 	
-	private void createMode(CategoryAssignment ca) {
-		try {
-			BeanCategoryAssignmentFactory beanFactory = new BeanCategoryAssignmentFactory();
-			mode = (State) beanFactory.getInstanceFor(ca);
-		} catch (CoreException e) {
-			
-		}
-	}
-					
+	@XmlElement(nillable = true)
+	@XmlJavaTypeAdapter(ABeanObjectAdapter.class)
 	public State getMode() {
 		safeAccessMode();
-		return mode;
+		return mode.getValue();
 	}
 	
 	public Command setMode(EditingDomain ed, State value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("mode");
-		CategoryAssignment ca = value.getTypeInstance();
-		return SetCommand.create(ed, propertyInstance, PropertyinstancesPackage.Literals.REFERENCE_PROPERTY_INSTANCE__REFERENCE, ca);
+		safeAccessMode();
+		return mode.setValue(ed, value);
 	}
 	
 	public void setMode(State value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("mode");
-		if (value != null) {
-			propertyInstance.setReference(value.getTypeInstance());
-		} else {
-			propertyInstance.setReference(null);
-		}
+		safeAccessMode();
+		mode.setValue(value);
+	}
+	
+	public BeanPropertyReference<State> getModeBean() {
+		safeAccessMode();
+		return mode;
 	}
 	
 	// *****************************************************************
@@ -160,6 +149,7 @@ public abstract class APowerState extends ABeanCategoryAssignment implements IBe
 		return power.isSet();
 	}
 	
+	@XmlElement
 	public BeanPropertyFloat getPowerBean() {
 		safeAccessPower();
 		return power;
@@ -196,6 +186,7 @@ public abstract class APowerState extends ABeanCategoryAssignment implements IBe
 		return avgPower.isSet();
 	}
 	
+	@XmlElement
 	public BeanPropertyFloat getAvgPowerBean() {
 		safeAccessAvgPower();
 		return avgPower;
@@ -232,6 +223,7 @@ public abstract class APowerState extends ABeanCategoryAssignment implements IBe
 		return dutyCycle.isSet();
 	}
 	
+	@XmlElement
 	public BeanPropertyFloat getDutyCycleBean() {
 		safeAccessDutyCycle();
 		return dutyCycle;

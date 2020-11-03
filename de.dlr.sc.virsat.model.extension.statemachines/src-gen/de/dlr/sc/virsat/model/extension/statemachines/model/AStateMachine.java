@@ -12,28 +12,30 @@ package de.dlr.sc.virsat.model.extension.statemachines.model;
 // *****************************************************************
 // * Import Statements
 // *****************************************************************
+import javax.xml.bind.annotation.XmlAccessorType;
 import de.dlr.sc.virsat.model.concept.types.category.IBeanCategoryAssignment;
 import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyEnum;
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
-import org.eclipse.core.runtime.CoreException;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.EnumUnitPropertyInstance;
+import javax.xml.bind.annotation.XmlRootElement;
 import de.dlr.sc.virsat.model.dvlm.categories.util.CategoryInstantiator;
-import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.PropertyinstancesPackage;
 import de.dlr.sc.virsat.model.concept.list.IBeanList;
 import de.dlr.sc.virsat.model.dvlm.categories.Category;
-import de.dlr.sc.virsat.model.concept.types.factory.BeanCategoryAssignmentFactory;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ArrayInstance;
-import de.dlr.sc.virsat.model.extension.statemachines.model.AConstraint;
+import javax.xml.bind.annotation.XmlAccessType;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ReferencePropertyInstance;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyReference;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emf.common.command.Command;
-import org.eclipse.emf.edit.command.SetCommand;
+import de.dlr.sc.virsat.model.concept.list.TypeSafeComposedPropertyBeanList;
+import de.dlr.sc.virsat.model.dvlm.json.ABeanObjectAdapter;
 import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
-import de.dlr.sc.virsat.model.extension.statemachines.model.Transition;
-import de.dlr.sc.virsat.model.concept.types.category.ABeanCategoryAssignment;
-import de.dlr.sc.virsat.model.extension.statemachines.model.State;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import de.dlr.sc.virsat.model.concept.list.TypeSafeComposedPropertyInstanceList;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyComposed;
+import de.dlr.sc.virsat.model.ext.core.model.GenericCategory;
+import javax.xml.bind.annotation.XmlElement;
 
 
 // *****************************************************************
@@ -48,7 +50,9 @@ import de.dlr.sc.virsat.model.concept.list.TypeSafeComposedPropertyInstanceList;
  * A state machine with states and transitions
  * 
  */	
-public abstract class AStateMachine extends ABeanCategoryAssignment implements IBeanCategoryAssignment {
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class AStateMachine extends GenericCategory implements IBeanCategoryAssignment {
 
 	public static final String FULL_QUALIFIED_CATEGORY_NAME = "de.dlr.sc.virsat.model.extension.statemachines.StateMachine";
 	
@@ -124,6 +128,7 @@ public abstract class AStateMachine extends ABeanCategoryAssignment implements I
 		return type.getEnumValue();
 	}
 	
+	@XmlElement
 	public BeanPropertyEnum getTypeBean() {
 		safeAccessType();
 		return type;
@@ -132,49 +137,33 @@ public abstract class AStateMachine extends ABeanCategoryAssignment implements I
 	// *****************************************************************
 	// * Attribute: initialState
 	// *****************************************************************
-	private State initialState;
+	private BeanPropertyReference<State> initialState = new BeanPropertyReference<>();
 	
 	private void safeAccessInitialState() {
 		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("initialState");
-		CategoryAssignment ca = (CategoryAssignment) propertyInstance.getReference();
-		
-		if (ca != null) {
-			if (initialState == null) {
-				createInitialState(ca);
-			}
-			initialState.setTypeInstance(ca);
-		} else {
-			initialState = null;
-		}
+		initialState.setTypeInstance(propertyInstance);
 	}
 	
-	private void createInitialState(CategoryAssignment ca) {
-		try {
-			BeanCategoryAssignmentFactory beanFactory = new BeanCategoryAssignmentFactory();
-			initialState = (State) beanFactory.getInstanceFor(ca);
-		} catch (CoreException e) {
-			
-		}
-	}
-					
+	@XmlElement(nillable = true)
+	@XmlJavaTypeAdapter(ABeanObjectAdapter.class)
 	public State getInitialState() {
 		safeAccessInitialState();
-		return initialState;
+		return initialState.getValue();
 	}
 	
 	public Command setInitialState(EditingDomain ed, State value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("initialState");
-		CategoryAssignment ca = value.getTypeInstance();
-		return SetCommand.create(ed, propertyInstance, PropertyinstancesPackage.Literals.REFERENCE_PROPERTY_INSTANCE__REFERENCE, ca);
+		safeAccessInitialState();
+		return initialState.setValue(ed, value);
 	}
 	
 	public void setInitialState(State value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("initialState");
-		if (value != null) {
-			propertyInstance.setReference(value.getTypeInstance());
-		} else {
-			propertyInstance.setReference(null);
-		}
+		safeAccessInitialState();
+		initialState.setValue(value);
+	}
+	
+	public BeanPropertyReference<State> getInitialStateBean() {
+		safeAccessInitialState();
+		return initialState;
 	}
 	
 	// *****************************************************************
@@ -193,6 +182,20 @@ public abstract class AStateMachine extends ABeanCategoryAssignment implements I
 		return states;
 	}
 	
+	private IBeanList<BeanPropertyComposed<State>> statesBean = new TypeSafeComposedPropertyBeanList<>();
+	
+	private void safeAccessStatesBean() {
+		if (statesBean.getArrayInstance() == null) {
+			statesBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("states"));
+		}
+	}
+	
+	@XmlElement
+	public IBeanList<BeanPropertyComposed<State>> getStatesBean() {
+		safeAccessStatesBean();
+		return statesBean;
+	}
+	
 	// *****************************************************************
 	// * Array Attribute: transitions
 	// *****************************************************************
@@ -209,6 +212,20 @@ public abstract class AStateMachine extends ABeanCategoryAssignment implements I
 		return transitions;
 	}
 	
+	private IBeanList<BeanPropertyComposed<Transition>> transitionsBean = new TypeSafeComposedPropertyBeanList<>();
+	
+	private void safeAccessTransitionsBean() {
+		if (transitionsBean.getArrayInstance() == null) {
+			transitionsBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("transitions"));
+		}
+	}
+	
+	@XmlElement
+	public IBeanList<BeanPropertyComposed<Transition>> getTransitionsBean() {
+		safeAccessTransitionsBean();
+		return transitionsBean;
+	}
+	
 	// *****************************************************************
 	// * Array Attribute: constraints
 	// *****************************************************************
@@ -223,6 +240,20 @@ public abstract class AStateMachine extends ABeanCategoryAssignment implements I
 	public IBeanList<AConstraint> getConstraints() {
 		safeAccessConstraints();
 		return constraints;
+	}
+	
+	private IBeanList<BeanPropertyComposed<AConstraint>> constraintsBean = new TypeSafeComposedPropertyBeanList<>();
+	
+	private void safeAccessConstraintsBean() {
+		if (constraintsBean.getArrayInstance() == null) {
+			constraintsBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("constraints"));
+		}
+	}
+	
+	@XmlElement
+	public IBeanList<BeanPropertyComposed<AConstraint>> getConstraintsBean() {
+		safeAccessConstraintsBean();
+		return constraintsBean;
 	}
 	
 	

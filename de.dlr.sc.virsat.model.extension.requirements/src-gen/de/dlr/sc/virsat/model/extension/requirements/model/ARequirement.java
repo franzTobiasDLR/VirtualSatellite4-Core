@@ -12,27 +12,23 @@ package de.dlr.sc.virsat.model.extension.requirements.model;
 // *****************************************************************
 // * Import Statements
 // *****************************************************************
-import de.dlr.sc.virsat.model.extension.requirements.model.AttributeValue;
 import de.dlr.sc.virsat.model.concept.types.category.IBeanCategoryAssignment;
 import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyEnum;
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
-import de.dlr.sc.virsat.model.extension.requirements.model.RequirementType;
-import org.eclipse.core.runtime.CoreException;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.EnumUnitPropertyInstance;
 import de.dlr.sc.virsat.model.dvlm.categories.util.CategoryInstantiator;
-import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.PropertyinstancesPackage;
 import de.dlr.sc.virsat.model.concept.list.IBeanList;
 import de.dlr.sc.virsat.model.dvlm.categories.Category;
-import de.dlr.sc.virsat.model.concept.types.factory.BeanCategoryAssignmentFactory;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ArrayInstance;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ReferencePropertyInstance;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
-import de.dlr.sc.virsat.model.extension.requirements.model.RequirementObject;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyReference;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emf.common.command.Command;
-import org.eclipse.emf.edit.command.SetCommand;
+import de.dlr.sc.virsat.model.concept.list.TypeSafeComposedPropertyBeanList;
 import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
 import de.dlr.sc.virsat.model.concept.list.TypeSafeComposedPropertyInstanceList;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyComposed;
 
 
 // *****************************************************************
@@ -63,6 +59,7 @@ public abstract class ARequirement extends RequirementObject implements IBeanCat
 	public static final String PROPERTY_REQTYPE = "reqType";
 	public static final String PROPERTY_ELEMENTS = "elements";
 	public static final String PROPERTY_STATUS = "status";
+	public static final String PROPERTY_VERIFICATION = "verification";
 	
 	// Status enumeration value names
 	public static final String STATUS_Open_NAME = "Open";
@@ -99,49 +96,31 @@ public abstract class ARequirement extends RequirementObject implements IBeanCat
 	// *****************************************************************
 	// * Attribute: reqType
 	// *****************************************************************
-	private RequirementType reqType;
+	private BeanPropertyReference<RequirementType> reqType = new BeanPropertyReference<>();
 	
 	private void safeAccessReqType() {
 		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("reqType");
-		CategoryAssignment ca = (CategoryAssignment) propertyInstance.getReference();
-		
-		if (ca != null) {
-			if (reqType == null) {
-				createReqType(ca);
-			}
-			reqType.setTypeInstance(ca);
-		} else {
-			reqType = null;
-		}
+		reqType.setTypeInstance(propertyInstance);
 	}
 	
-	private void createReqType(CategoryAssignment ca) {
-		try {
-			BeanCategoryAssignmentFactory beanFactory = new BeanCategoryAssignmentFactory();
-			reqType = (RequirementType) beanFactory.getInstanceFor(ca);
-		} catch (CoreException e) {
-			
-		}
-	}
-					
 	public RequirementType getReqType() {
 		safeAccessReqType();
-		return reqType;
+		return reqType.getValue();
 	}
 	
 	public Command setReqType(EditingDomain ed, RequirementType value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("reqType");
-		CategoryAssignment ca = value.getTypeInstance();
-		return SetCommand.create(ed, propertyInstance, PropertyinstancesPackage.Literals.REFERENCE_PROPERTY_INSTANCE__REFERENCE, ca);
+		safeAccessReqType();
+		return reqType.setValue(ed, value);
 	}
 	
 	public void setReqType(RequirementType value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("reqType");
-		if (value != null) {
-			propertyInstance.setReference(value.getTypeInstance());
-		} else {
-			propertyInstance.setReference(null);
-		}
+		safeAccessReqType();
+		reqType.setValue(value);
+	}
+	
+	public BeanPropertyReference<RequirementType> getReqTypeBean() {
+		safeAccessReqType();
+		return reqType;
 	}
 	
 	// *****************************************************************
@@ -158,6 +137,19 @@ public abstract class ARequirement extends RequirementObject implements IBeanCat
 	public IBeanList<AttributeValue> getElements() {
 		safeAccessElements();
 		return elements;
+	}
+	
+	private IBeanList<BeanPropertyComposed<AttributeValue>> elementsBean = new TypeSafeComposedPropertyBeanList<>();
+	
+	private void safeAccessElementsBean() {
+		if (elementsBean.getArrayInstance() == null) {
+			elementsBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("elements"));
+		}
+	}
+	
+	public IBeanList<BeanPropertyComposed<AttributeValue>> getElementsBean() {
+		safeAccessElementsBean();
+		return elementsBean;
 	}
 	
 	// *****************************************************************
@@ -194,6 +186,35 @@ public abstract class ARequirement extends RequirementObject implements IBeanCat
 	public BeanPropertyEnum getStatusBean() {
 		safeAccessStatus();
 		return status;
+	}
+	
+	// *****************************************************************
+	// * Array Attribute: verification
+	// *****************************************************************
+	private IBeanList<IVerification> verification = new TypeSafeComposedPropertyInstanceList<>(IVerification.class);
+	
+	private void safeAccessVerification() {
+		if (verification.getArrayInstance() == null) {
+			verification.setArrayInstance((ArrayInstance) helper.getPropertyInstance("verification"));
+		}
+	}
+	
+	public IBeanList<IVerification> getVerification() {
+		safeAccessVerification();
+		return verification;
+	}
+	
+	private IBeanList<BeanPropertyComposed<IVerification>> verificationBean = new TypeSafeComposedPropertyBeanList<>();
+	
+	private void safeAccessVerificationBean() {
+		if (verificationBean.getArrayInstance() == null) {
+			verificationBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("verification"));
+		}
+	}
+	
+	public IBeanList<BeanPropertyComposed<IVerification>> getVerificationBean() {
+		safeAccessVerificationBean();
+		return verificationBean;
 	}
 	
 	

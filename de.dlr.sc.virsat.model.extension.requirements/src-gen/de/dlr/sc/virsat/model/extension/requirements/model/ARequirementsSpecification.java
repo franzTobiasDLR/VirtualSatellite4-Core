@@ -15,20 +15,20 @@ package de.dlr.sc.virsat.model.extension.requirements.model;
 import de.dlr.sc.virsat.model.concept.types.category.IBeanCategoryAssignment;
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
 import org.eclipse.emf.common.util.URI;
-import de.dlr.sc.virsat.model.extension.requirements.model.RequirementType;
 import de.dlr.sc.virsat.model.dvlm.categories.util.CategoryInstantiator;
 import de.dlr.sc.virsat.model.concept.list.IBeanList;
 import de.dlr.sc.virsat.model.dvlm.categories.Category;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ArrayInstance;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ResourcePropertyInstance;
-import de.dlr.sc.virsat.model.extension.requirements.model.RequirementObject;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emf.common.command.Command;
+import de.dlr.sc.virsat.model.concept.list.TypeSafeComposedPropertyBeanList;
 import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
-import de.dlr.sc.virsat.model.concept.types.category.ABeanCategoryAssignment;
 import de.dlr.sc.virsat.model.concept.list.TypeSafeComposedPropertyInstanceList;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyComposed;
 import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyResource;
+import de.dlr.sc.virsat.model.ext.core.model.GenericCategory;
 
 
 // *****************************************************************
@@ -43,7 +43,7 @@ import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyResource;
  * 
  * 
  */	
-public abstract class ARequirementsSpecification extends ABeanCategoryAssignment implements IBeanCategoryAssignment {
+public abstract class ARequirementsSpecification extends GenericCategory implements IBeanCategoryAssignment {
 
 	public static final String FULL_QUALIFIED_CATEGORY_NAME = "de.dlr.sc.virsat.model.extension.requirements.RequirementsSpecification";
 	
@@ -58,7 +58,7 @@ public abstract class ARequirementsSpecification extends ABeanCategoryAssignment
 	// property name constants
 	public static final String PROPERTY_EXPORTFILE = "exportFile";
 	public static final String PROPERTY_REQUIREMENTS = "requirements";
-	public static final String PROPERTY_TYPEDEFINITIONS = "typeDefinitions";
+	public static final String PROPERTY_LINKS = "links";
 	
 	
 	
@@ -127,20 +127,46 @@ public abstract class ARequirementsSpecification extends ABeanCategoryAssignment
 		return requirements;
 	}
 	
-	// *****************************************************************
-	// * Array Attribute: typeDefinitions
-	// *****************************************************************
-	private IBeanList<RequirementType> typeDefinitions = new TypeSafeComposedPropertyInstanceList<>(RequirementType.class);
+	private IBeanList<BeanPropertyComposed<RequirementObject>> requirementsBean = new TypeSafeComposedPropertyBeanList<>();
 	
-	private void safeAccessTypeDefinitions() {
-		if (typeDefinitions.getArrayInstance() == null) {
-			typeDefinitions.setArrayInstance((ArrayInstance) helper.getPropertyInstance("typeDefinitions"));
+	private void safeAccessRequirementsBean() {
+		if (requirementsBean.getArrayInstance() == null) {
+			requirementsBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("requirements"));
 		}
 	}
 	
-	public IBeanList<RequirementType> getTypeDefinitions() {
-		safeAccessTypeDefinitions();
-		return typeDefinitions;
+	public IBeanList<BeanPropertyComposed<RequirementObject>> getRequirementsBean() {
+		safeAccessRequirementsBean();
+		return requirementsBean;
+	}
+	
+	// *****************************************************************
+	// * Array Attribute: links
+	// *****************************************************************
+	private IBeanList<RequirementLink> links = new TypeSafeComposedPropertyInstanceList<>(RequirementLink.class);
+	
+	private void safeAccessLinks() {
+		if (links.getArrayInstance() == null) {
+			links.setArrayInstance((ArrayInstance) helper.getPropertyInstance("links"));
+		}
+	}
+	
+	public IBeanList<RequirementLink> getLinks() {
+		safeAccessLinks();
+		return links;
+	}
+	
+	private IBeanList<BeanPropertyComposed<RequirementLink>> linksBean = new TypeSafeComposedPropertyBeanList<>();
+	
+	private void safeAccessLinksBean() {
+		if (linksBean.getArrayInstance() == null) {
+			linksBean.setArrayInstance((ArrayInstance) helper.getPropertyInstance("links"));
+		}
+	}
+	
+	public IBeanList<BeanPropertyComposed<RequirementLink>> getLinksBean() {
+		safeAccessLinksBean();
+		return linksBean;
 	}
 	
 	

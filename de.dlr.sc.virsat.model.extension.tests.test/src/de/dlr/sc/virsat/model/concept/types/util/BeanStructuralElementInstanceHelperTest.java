@@ -9,9 +9,10 @@
  *******************************************************************************/
 package de.dlr.sc.virsat.model.concept.types.util;
 
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.Set;
@@ -24,8 +25,6 @@ import de.dlr.sc.virsat.model.extension.tests.model.AConceptTestCase;
 import de.dlr.sc.virsat.model.extension.tests.model.TestCategoryAllProperty;
 import de.dlr.sc.virsat.model.extension.tests.model.TestStructuralElement;
 import de.dlr.sc.virsat.model.extension.tests.model.TestStructuralElementOther;
-
-import static org.hamcrest.CoreMatchers.hasItems;
 
 /**
  * This class handles the test cases for BeanStructuralElementInstance Helper. Since it needs a test concept to execute the code
@@ -127,9 +126,9 @@ public class BeanStructuralElementInstanceHelperTest extends AConceptTestCase {
 		rootElement.add(child);
 		child.add(grandChild);
 		
-		assertNull("The root has no parent", rootElement.getParentSeiBean());
-		assertEquals("The child has proper parent", rootElement.getStructuralElementInstance(), child.getParentSeiBean().getStructuralElementInstance());
-		assertEquals("The grandchild has proper parent", child.getStructuralElementInstance(), grandChild.getParentSeiBean().getStructuralElementInstance());
+		assertNull("The root has no parent", rootElement.getParent());
+		assertEquals("The child has proper parent", rootElement.getStructuralElementInstance(), child.getParent().getStructuralElementInstance());
+		assertEquals("The grandchild has proper parent", child.getStructuralElementInstance(), grandChild.getParent().getStructuralElementInstance());
 	}
 
 	@Test

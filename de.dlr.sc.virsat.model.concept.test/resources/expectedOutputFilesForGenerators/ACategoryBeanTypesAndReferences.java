@@ -12,23 +12,26 @@ package testConcept.model;
 // *****************************************************************
 // * Import Statements
 // *****************************************************************
+import javax.xml.bind.annotation.XmlAccessorType;
 import de.dlr.sc.virsat.model.concept.types.category.IBeanCategoryAssignment;
-import testConcept.model.TestCategoryA;
 import de.dlr.sc.virsat.model.dvlm.concepts.util.ActiveConceptHelper;
-import org.eclipse.core.runtime.CoreException;
+import javax.xml.bind.annotation.XmlRootElement;
 import de.dlr.sc.virsat.model.dvlm.categories.util.CategoryInstantiator;
-import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.PropertyinstancesPackage;
 import de.dlr.sc.virsat.model.dvlm.categories.Category;
-import de.dlr.sc.virsat.model.concept.types.factory.BeanCategoryAssignmentFactory;
 import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyString;
+import javax.xml.bind.annotation.XmlAccessType;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ReferencePropertyInstance;
 import de.dlr.sc.virsat.model.dvlm.concepts.Concept;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyReference;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emf.common.command.Command;
-import org.eclipse.emf.edit.command.SetCommand;
+import de.dlr.sc.virsat.model.dvlm.json.ABeanObjectAdapter;
 import de.dlr.sc.virsat.model.dvlm.categories.CategoryAssignment;
 import de.dlr.sc.virsat.model.concept.types.category.ABeanCategoryAssignment;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ComposedPropertyInstance;
+import de.dlr.sc.virsat.model.concept.types.property.BeanPropertyComposed;
+import javax.xml.bind.annotation.XmlElement;
 
 
 // *****************************************************************
@@ -43,6 +46,8 @@ import de.dlr.sc.virsat.model.dvlm.categories.propertyinstances.ComposedProperty
  * 
  * 
  */	
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
 public abstract class ATestCategoryB extends ABeanCategoryAssignment implements IBeanCategoryAssignment {
 
 	public static final String FULL_QUALIFIED_CATEGORY_NAME = "testConcept.TestCategoryB";
@@ -83,16 +88,22 @@ public abstract class ATestCategoryB extends ABeanCategoryAssignment implements 
 	// *****************************************************************
 	// * Attribute: testSubCategory
 	// *****************************************************************
-	private TestCategoryA testSubCategory = new TestCategoryA();
+	private BeanPropertyComposed<TestCategoryA> testSubCategory = new BeanPropertyComposed<>();
 	
 	private void safeAccessTestSubCategory() {
 		if (testSubCategory.getTypeInstance() == null) {
 			ComposedPropertyInstance propertyInstance = (ComposedPropertyInstance) helper.getPropertyInstance("testSubCategory");
-			testSubCategory.setTypeInstance(propertyInstance.getTypeInstance());
+			testSubCategory.setTypeInstance(propertyInstance);
 		}
 	}
 	
-	public TestCategoryA getTestSubCategory () {
+	@XmlElement(nillable = true)
+	public TestCategoryA getTestSubCategory() {
+		safeAccessTestSubCategory();
+		return testSubCategory.getValue();
+	}
+	
+	public BeanPropertyComposed<TestCategoryA> getTestSubCategoryBean() {
 		safeAccessTestSubCategory();
 		return testSubCategory;
 	}
@@ -100,76 +111,66 @@ public abstract class ATestCategoryB extends ABeanCategoryAssignment implements 
 	// *****************************************************************
 	// * Attribute: testRefCategory
 	// *****************************************************************
-	private TestCategoryA testRefCategory;
+	private BeanPropertyReference<TestCategoryA> testRefCategory = new BeanPropertyReference<>();
 	
 	private void safeAccessTestRefCategory() {
 		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("testRefCategory");
-		CategoryAssignment ca = (CategoryAssignment) propertyInstance.getReference();
-		
-		if (ca != null) {
-			if (testRefCategory == null) {
-				createTestRefCategory(ca);
-			}
-			testRefCategory.setTypeInstance(ca);
-		} else {
-			testRefCategory = null;
-		}
+		testRefCategory.setTypeInstance(propertyInstance);
 	}
 	
-	private void createTestRefCategory(CategoryAssignment ca) {
-		try {
-			BeanCategoryAssignmentFactory beanFactory = new BeanCategoryAssignmentFactory();
-			testRefCategory = (TestCategoryA) beanFactory.getInstanceFor(ca);
-		} catch (CoreException e) {
-			
-		}
-	}
-					
+	@XmlElement(nillable = true)
+	@XmlJavaTypeAdapter(ABeanObjectAdapter.class)
 	public TestCategoryA getTestRefCategory() {
 		safeAccessTestRefCategory();
-		return testRefCategory;
+		return testRefCategory.getValue();
 	}
 	
 	public Command setTestRefCategory(EditingDomain ed, TestCategoryA value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("testRefCategory");
-		CategoryAssignment ca = value.getTypeInstance();
-		return SetCommand.create(ed, propertyInstance, PropertyinstancesPackage.Literals.REFERENCE_PROPERTY_INSTANCE__REFERENCE, ca);
+		safeAccessTestRefCategory();
+		return testRefCategory.setValue(ed, value);
 	}
 	
 	public void setTestRefCategory(TestCategoryA value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("testRefCategory");
-		if (value != null) {
-			propertyInstance.setReference(value.getTypeInstance());
-		} else {
-			propertyInstance.setReference(null);
-		}
+		safeAccessTestRefCategory();
+		testRefCategory.setValue(value);
+	}
+	
+	public BeanPropertyReference<TestCategoryA> getTestRefCategoryBean() {
+		safeAccessTestRefCategory();
+		return testRefCategory;
 	}
 	
 	// *****************************************************************
 	// * Attribute: testRefProperty
 	// *****************************************************************
-	private BeanPropertyString testRefProperty = new BeanPropertyString();
+	private BeanPropertyReference<BeanPropertyString> testRefProperty = new BeanPropertyReference<>();
 	
 	private void safeAccessTestRefProperty() {
 		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("testRefProperty");
-		testRefProperty.setATypeInstance(propertyInstance.getReference());
+		testRefProperty.setTypeInstance(propertyInstance);
 	}
 	
-	public de.dlr.sc.virsat.model.concept.types.property.BeanPropertyString getTestRefPropertyBean() {
+	@XmlElement(nillable = true)
+	@XmlJavaTypeAdapter(ABeanObjectAdapter.class)
+	public BeanPropertyString getTestRefProperty() {
+		safeAccessTestRefProperty();
+		return testRefProperty.getValue();
+	}
+	
+	public Command setTestRefProperty(EditingDomain ed, BeanPropertyString value) {
+		safeAccessTestRefProperty();
+		return testRefProperty.setValue(ed, value);
+	}
+	
+	public void setTestRefProperty(BeanPropertyString value) {
+		safeAccessTestRefProperty();
+		testRefProperty.setValue(value);
+	}
+	
+	public BeanPropertyReference<BeanPropertyString> getTestRefPropertyBean() {
 		safeAccessTestRefProperty();
 		return testRefProperty;
 	}
 	
-	public Command setTestRefPropertyBean(EditingDomain ed, BeanPropertyString value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("testRefProperty");
-		return SetCommand.create(ed, propertyInstance, PropertyinstancesPackage.Literals.REFERENCE_PROPERTY_INSTANCE__REFERENCE, value.getTypeInstance());
-	}
-	
-	public void setTestRefPropertyBean(BeanPropertyString value) {
-		ReferencePropertyInstance propertyInstance = (ReferencePropertyInstance) helper.getPropertyInstance("testRefProperty");
-		propertyInstance.setReference(value.getTypeInstance());
-	}
-	
 	
 }
-
